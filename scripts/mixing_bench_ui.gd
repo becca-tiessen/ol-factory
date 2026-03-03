@@ -150,8 +150,6 @@ func _on_commit_pressed() -> void:
 
 	# Check for new accord discoveries.
 	var new_accords := AccordManager.check_blend_for_accords(blend)
-	if not new_accords.is_empty():
-		_show_accord_discoveries(new_accords)
 
 	# Notify request manager of the blend commit (drives rotation counter).
 	RequestManager.on_blend_committed()
@@ -160,8 +158,8 @@ func _on_commit_pressed() -> void:
 	_committed = true
 	_update_ui_state()
 
-	# Start the celebration sequence.
-	_start_celebration(bd, placed_on_rack)
+	# Start the celebration sequence (includes accord discoveries if any).
+	_start_celebration(bd, placed_on_rack, new_accords)
 
 
 func _on_clear_pressed() -> void:
@@ -224,37 +222,6 @@ func _reset_results() -> void:
 	%BalanceHint.text = ""
 
 
-func _show_accord_discoveries(accords: Array[BaseAccord]) -> void:
-	var names: Array[String] = []
-	for accord in accords:
-		names.append(accord.accord_name)
-	var text := "New Accord Discovered: %s!" % ", ".join(names)
-
-	var panel := get_node_or_null("Panel")
-	if panel == null:
-		return
-
-	var lbl := Label.new()
-	lbl.text = text
-	lbl.add_theme_color_override("font_color", UITheme.GOLD)
-	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.custom_minimum_size = Vector2(200, 0)
-
-	var result_col = %BottledLabel.get_parent()
-	if result_col:
-		result_col.add_child(lbl)
-	else:
-		panel.add_child(lbl)
-
-	var timer := get_tree().create_timer(4.0)
-	timer.timeout.connect(func():
-		if is_instance_valid(lbl):
-			lbl.queue_free()
-	)
-
-
 func _build_request_tracker() -> void:
 	var result_col = %BottledLabel.get_parent()
 	if result_col == null:
@@ -301,7 +268,7 @@ func _update_request_tracker() -> void:
 # Post-commit celebration
 # ---------------------------------------------------------------------------
 
-func _start_celebration(bd: Dictionary, placed_on_rack: bool) -> void:
+func _start_celebration(bd: Dictionary, placed_on_rack: bool, new_accords: Array[BaseAccord] = []) -> void:
 	# 1. Clear the blend list and right-side breakdown immediately.
 	for child in %BlendList.get_children():
 		child.queue_free()
@@ -314,14 +281,14 @@ func _start_celebration(bd: Dictionary, placed_on_rack: bool) -> void:
 	_celebration_tween.tween_property(_bottle, "fill_ratio", 0.0, 0.5).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
 	# 3. Show celebration card after the drain finishes.
-	_celebration_tween.tween_callback(_show_celebration_card.bind(bd, placed_on_rack))
+	_celebration_tween.tween_callback(_show_celebration_card.bind(bd, placed_on_rack, new_accords))
 
 	# 4. Auto-dismiss after 2 seconds (or earlier via click/key in _unhandled_input).
 	_celebration_tween.tween_interval(2.0)
 	_celebration_tween.tween_callback(_dismiss_celebration)
 
 
-func _show_celebration_card(bd: Dictionary, placed_on_rack: bool) -> void:
+func _show_celebration_card(bd: Dictionary, placed_on_rack: bool, new_accords: Array[BaseAccord] = []) -> void:
 	var panel := get_node_or_null("Panel")
 	if panel == null:
 		return
@@ -385,6 +352,19 @@ func _show_celebration_card(bd: Dictionary, placed_on_rack: bool) -> void:
 	msg_lbl.add_theme_font_size_override("font_size", 13)
 	msg_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(msg_lbl)
+
+	# Accord discovery line (if any).
+	if not new_accords.is_empty():
+		var names: Array[String] = []
+		for accord in new_accords:
+			names.append(accord.accord_name)
+		var accord_lbl := Label.new()
+		accord_lbl.text = "Accord Discovered: %s!" % ", ".join(names)
+		accord_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		accord_lbl.add_theme_color_override("font_color", UITheme.GOLD)
+		accord_lbl.add_theme_font_size_override("font_size", 15)
+		accord_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(accord_lbl)
 
 	# -- Position centered over the Panel --
 	_celebration_card.set_anchors_preset(Control.PRESET_CENTER)
