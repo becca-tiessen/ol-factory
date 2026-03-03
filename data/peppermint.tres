@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_pep"]
+
+[resource]
+script = ExtResource("1_pep")
+display_name = "Peppermint"
+description = "Sharp and cooling with an intense green freshness."
+liquid_color = Color(0.30, 0.90, 0.45, 1)
+scent_family = "green"
+intensity = 8.0
+note_position = "top"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

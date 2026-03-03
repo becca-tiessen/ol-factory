@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://btgfvj4onlgj1"]
+
+[ext_resource type="Texture2D" uid="uid://bystbmmr3paiv" path="res://assets/PNG/Interior.png" id="1_02ppr"]
+[ext_resource type="Script" uid="uid://kua35nlrosqd" path="res://scripts/mixing_bench.gd" id="1_eotx8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eotx8"]
+size = Vector2(35, 27)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_02ppr"]
+size = Vector2(49, 44)
+
+[node name="MixingBench" type="StaticBody2D"]
+script = ExtResource("1_eotx8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-0.5, -2.5)
+shape = SubResource("RectangleShape2D_eotx8")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_02ppr")
+region_enabled = true
+region_rect = Rect2(116, 176, 41, 36)
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+position = Vector2(-0.5, -1)
+shape = SubResource("RectangleShape2D_02ppr")

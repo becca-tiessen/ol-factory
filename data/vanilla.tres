@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_van"]
+
+[resource]
+script = ExtResource("1_van")
+display_name = "Vanilla"
+description = "Rich and creamy with a warm, comforting sweetness."
+liquid_color = Color(1.0, 0.88, 0.45, 1)
+scent_family = "sweet"
+intensity = 7.0
+note_position = "base"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

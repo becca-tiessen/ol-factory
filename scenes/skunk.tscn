@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://cp24ams23vhou"]
+
+[ext_resource type="Texture2D" uid="uid://cs5pxgvlovt0c" path="res://assets/skunk.png" id="1_aoon3"]
+
+[node name="Sprite2D" type="Sprite2D"]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1_aoon3")

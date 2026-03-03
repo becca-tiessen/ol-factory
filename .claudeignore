@@ -1,0 +1,22 @@
+# Godot Engine internal files
+
+.godot/
+\*.import
+android/
+build/
+assets/
+
+# Heavy Assets (Claude can't read these anyway)
+
+_.png
+_.jpg
+_.jpeg
+_.wav
+_.ogg
+_.mp3
+_.tga
+_.psd
+
+# Project Metadata
+
+export_presets.cfg

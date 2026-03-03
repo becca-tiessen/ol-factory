@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/rebeccatiessen/ol-factory/data/*.tres)",
+      "Bash(grep -n \"collision_layer\\\\|collision_mask\" /Users/rebeccatiessen/ol-factory/scenes/*.tscn)",
+      "Read(//Users/rebeccatiessen/**)"
+    ]
+  }
+}

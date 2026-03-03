@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_ber"]
+
+[resource]
+script = ExtResource("1_ber")
+display_name = "Bergamot"
+description = "Bright citrus with a floral, slightly spicy edge."
+liquid_color = Color(0.70, 0.90, 0.30, 1)
+scent_family = "citrus"
+intensity = 5.0
+note_position = "top"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

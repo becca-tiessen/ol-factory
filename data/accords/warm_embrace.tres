@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BaseAccord" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/base_accord.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+accord_name = "Warm Embrace"
+description = "A comforting blanket of sweetness and smoke."
+scent_family = "sweet"
+note_position = "base"
+recipe = {
+"res://data/vanilla.tres": 1,
+"res://data/sandalwood.tres": 1
+}

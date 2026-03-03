@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BaseAccord" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/base_accord.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+accord_name = "Twilight Woods"
+description = "Deep forest air as the sun slips below the trees."
+scent_family = "woody"
+note_position = "base"
+recipe = {
+"res://data/cedar.tres": 1,
+"res://data/sandalwood.tres": 1
+}

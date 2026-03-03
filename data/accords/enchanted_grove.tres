@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BaseAccord" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/base_accord.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+accord_name = "Enchanted Grove"
+description = "Blossoms tangled in ancient branches."
+scent_family = "floral"
+note_position = "middle"
+recipe = {
+"res://data/jasmine.tres": 1,
+"res://data/cedar.tres": 1
+}

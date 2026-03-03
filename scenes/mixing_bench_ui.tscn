@@ -1,0 +1,218 @@
+[gd_scene load_steps=4 format=3 uid="uid://bpwyymo25bt6k"]
+
+[ext_resource type="Script" uid="uid://bk42crcsy4ki5" path="res://scripts/mixing_bench_ui.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://3bxemenbw82x" path="res://scripts/grid_container.gd" id="2_pc71w"]
+[ext_resource type="Script" path="res://scripts/beaker_display.gd" id="3_beaker"]
+
+[node name="MixingBenchUI" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(1000, 550)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -275.0
+offset_right = 500.0
+offset_bottom = 275.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="IngredientColumn" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer/IngredientColumn"]
+layout_mode = 2
+text = "-- Ingredients --"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/HBoxContainer/IngredientColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="Panel/VBoxContainer/HBoxContainer/IngredientColumn/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 1
+script = ExtResource("2_pc71w")
+
+[node name="VSeparator" type="VSeparator" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="BlendColumn" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+layout_mode = 2
+text = "-- Current Blend --"
+horizontal_alignment = 1
+
+[node name="BlendScroll" type="ScrollContainer" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BlendList" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/BlendScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EmptyLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/BlendScroll/BlendList"]
+layout_mode = 2
+text = "(empty)"
+
+[node name="HSeparatorFeedback" type="HSeparator" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+layout_mode = 2
+
+[node name="DescriptionLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+custom_minimum_size = Vector2(0, 36)
+text = ""
+
+[node name="NoteRow" type="HBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+layout_mode = 2
+
+[node name="TopNote" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/NoteRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "Top"
+
+[node name="MidNote" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/NoteRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "Mid"
+
+[node name="BaseNote" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/NoteRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+text = "Base"
+
+[node name="BalanceRow" type="HBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+layout_mode = 2
+
+[node name="BalanceTitleLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/BalanceRow"]
+layout_mode = 2
+text = "Balance: "
+
+[node name="BalanceBar" type="ProgressBar" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/BalanceRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+value = 0.0
+show_percentage = false
+custom_minimum_size = Vector2(0, 16)
+
+[node name="BalanceHint" type="Label" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/BalanceRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Balanced"
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn"]
+layout_mode = 2
+
+[node name="CommitButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Commit Blend"
+
+[node name="ClearButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer/BlendColumn/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear Blend"
+
+[node name="VSeparator2" type="VSeparator" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="ResultColumn" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Bottle" type="Control" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(80, 120)
+script = ExtResource("3_beaker")
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+layout_mode = 2
+
+[node name="QualityLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Quality: --"
+
+[node name="TierLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tier: --"
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+layout_mode = 2
+
+[node name="BreakdownTitle" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+layout_mode = 2
+text = "-- Breakdown --"
+horizontal_alignment = 1
+
+[node name="CompatLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Compatibility: --"
+
+[node name="BalanceLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Balance: --"
+
+[node name="PyramidLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Pyramid: --"
+
+[node name="BottledLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/ResultColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+text = "Bottled! Bring to the cellar to age."
+
+[node name="HSeparator3" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Close"

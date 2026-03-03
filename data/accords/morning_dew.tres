@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BaseAccord" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/base_accord.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+accord_name = "Morning Dew"
+description = "Crisp and electric, like the first breath of dawn."
+scent_family = "green"
+note_position = "top"
+recipe = {
+"res://data/peppermint.tres": 1,
+"res://data/bergamot.tres": 1
+}

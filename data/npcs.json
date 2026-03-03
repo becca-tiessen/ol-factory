@@ -1,0 +1,102 @@
+{
+	"npcs": [
+		{
+			"id": "charlotte",
+			"name": "Charlotte",
+			"personality": "romantic",
+			"preferred_family": "floral",
+			"active": true
+		},
+		{
+			"id": "remy",
+			"name": "Rémy",
+			"personality": "outdoorsy",
+			"preferred_family": "green",
+			"active": true
+		},
+		{
+			"id": "genevieve",
+			"name": "Geneviève",
+			"personality": "nostalgic",
+			"preferred_family": "woody",
+			"active": true
+		},
+		{
+			"id": "noelle",
+			"name": "Noëlle",
+			"personality": "sweet-natured",
+			"preferred_family": "sweet",
+			"active": true
+		},
+		{
+			"id": "margot",
+			"name": "Margot",
+			"personality": "picky",
+			"preferred_family": "floral",
+			"active": true
+		},
+		{
+			"id": "pierre",
+			"name": "Pierre",
+			"personality": "practical",
+			"preferred_family": "citrus",
+			"active": true
+		},
+		{
+			"id": "simone",
+			"name": "Simone",
+			"personality": "dramatic",
+			"preferred_family": "sweet",
+			"active": true
+		},
+		{
+			"id": "bernard",
+			"name": "Bernard",
+			"personality": "warm-hearted",
+			"preferred_family": "woody",
+			"active": true
+		},
+		{
+			"id": "odette",
+			"name": "Odette",
+			"personality": "whimsical",
+			"preferred_family": "floral",
+			"active": false
+		},
+		{
+			"id": "celine",
+			"name": "Céline",
+			"personality": "elegant",
+			"preferred_family": "floral",
+			"active": false
+		},
+		{
+			"id": "pascal",
+			"name": "Pascal",
+			"personality": "studious",
+			"preferred_family": "green",
+			"active": false
+		},
+		{
+			"id": "dominic",
+			"name": "Dominic",
+			"personality": "adventurous",
+			"preferred_family": "citrus",
+			"active": false
+		},
+		{
+			"id": "marcel",
+			"name": "Marcel",
+			"personality": "sentimental",
+			"preferred_family": "woody",
+			"active": false
+		},
+		{
+			"id": "claude_npc",
+			"name": "Claude",
+			"personality": "mysterious",
+			"preferred_family": "woody",
+			"active": false
+		}
+	]
+}
