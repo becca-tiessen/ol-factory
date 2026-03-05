@@ -1,13 +1,15 @@
-[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3 uid="uid://jf875ipbxxss"]
 
 [ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_san"]
+[ext_resource type="Resource" path="res://data/oils/sandalwood_oil.tres" id="2_oil"]
 
 [resource]
 script = ExtResource("1_san")
-display_name = "Sandalwood"
-description = "Smooth and milky with a creamy, woody depth."
-liquid_color = Color(0.76, 0.60, 0.42, 1)
+display_name = "Raw Sandalwood"
+description = "Heartwood chips, smooth and creamy when processed."
+liquid_color = Color(0.76, 0.6, 0.42, 1)
 scent_family = "woody"
 intensity = 6.0
 note_position = "base"
+result_item = ExtResource("2_oil")
 metadata/_custom_type_script = "uid://byhsqudpoueih"

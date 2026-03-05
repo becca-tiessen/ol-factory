@@ -9,6 +9,6 @@ description = "A playful swirl of cool mint and warm vanilla."
 scent_family = "sweet"
 note_position = "top"
 recipe = {
-"res://data/vanilla.tres": 1,
-"res://data/peppermint.tres": 1
+"res://data/oils/vanilla_oil.tres": 1,
+"res://data/oils/peppermint_oil.tres": 1
 }

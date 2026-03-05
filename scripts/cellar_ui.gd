@@ -1,7 +1,7 @@
 extends BaseInteractableUI
 
 ## Cellar aging rack UI.
-## Top section: rack slots showing aging bottles.
+## Top section: rack slots showing aging bottles with visual BeakerDisplay.
 ## Bottom section: bottle inventory with "Place on Rack" buttons.
 ## Retrieved bottles go straight to inventory. Delivery is handled at the request board.
 
@@ -31,8 +31,11 @@ func _refresh_rack() -> void:
 
 	for i in range(CellarManager.get_rack_slots()):
 		var card := PanelContainer.new()
-		card.custom_minimum_size = Vector2(160, 0)
+		card.custom_minimum_size = Vector2(140, 0)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var vbox := VBoxContainer.new()
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.add_theme_constant_override("separation", 4)
 		card.add_child(vbox)
 
 		if i < CellarManager.aging_rack.size():
@@ -40,34 +43,65 @@ func _refresh_rack() -> void:
 			var bottle: BottledPerfume = entry["bottle"]
 			var bonus := CellarManager.get_age_bonus(i)
 			var ready := CellarManager.is_ready(i)
+			var progress := clampf(bonus / CellarManager.AGE_CAP, 0.0, 1.0)
 
+			# Bottle beaker visualization
+			var beaker := BeakerDisplay.new()
+			beaker.custom_minimum_size = Vector2(50, 70)
+			beaker.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			beaker.fill_ratio = lerpf(0.45, 0.70, progress)
+			_apply_bottle_layers(beaker, bottle, progress)
+			vbox.add_child(beaker)
+
+			# Ready sparkle indicator
+			if ready:
+				var sparkle := Label.new()
+				sparkle.text = "~ Ready ~"
+				sparkle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				sparkle.add_theme_color_override("font_color", UITheme.SOFT_GREEN)
+				sparkle.add_theme_font_size_override("font_size", 11)
+				vbox.add_child(sparkle)
+
+			# Perfume name
 			var name_lbl := Label.new()
-			name_lbl.text = bottle.get_label()
+			var pname: String = bottle.display_name if bottle.display_name != "" else bottle.get_label()
+			name_lbl.text = pname
 			name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			name_lbl.custom_minimum_size = Vector2(140, 0)
+			name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			name_lbl.add_theme_color_override("font_color", UITheme.HEADER_BROWN)
+			name_lbl.add_theme_font_size_override("font_size", 13)
 			vbox.add_child(name_lbl)
 
-			var quality_lbl := Label.new()
-			quality_lbl.text = "Base: %.1f" % bottle.base_quality
-			vbox.add_child(quality_lbl)
+			# Quality tier
+			var tier_lbl := Label.new()
+			tier_lbl.text = "%s — %.1f" % [bottle.tier, bottle.base_quality]
+			tier_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			tier_lbl.add_theme_color_override("font_color", UITheme.WARM_AMBER)
+			tier_lbl.add_theme_font_size_override("font_size", 12)
+			vbox.add_child(tier_lbl)
 
+			# Age progress
 			var age_lbl := Label.new()
-			age_lbl.text = "Age bonus: +%.2f / %.1f" % [bonus, CellarManager.AGE_CAP]
+			age_lbl.text = "+%.2f / %.1f" % [bonus, CellarManager.AGE_CAP]
+			age_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			age_lbl.add_theme_font_size_override("font_size", 11)
 			if ready:
 				age_lbl.add_theme_color_override("font_color", UITheme.SOFT_GREEN)
+			else:
+				age_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
 			vbox.add_child(age_lbl)
 
-			if ready:
-				var ready_lbl := Label.new()
-				ready_lbl.text = "Ready!"
-				ready_lbl.add_theme_color_override("font_color", UITheme.SOFT_GREEN)
-				vbox.add_child(ready_lbl)
-
+			# Retrieve button
 			var retrieve_btn := Button.new()
 			retrieve_btn.text = "Retrieve"
+			retrieve_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			var idx := i
 			retrieve_btn.pressed.connect(func(): _on_retrieve(idx))
 			vbox.add_child(retrieve_btn)
+
+			# Tooltip on hover
+			card.tooltip_text = _build_tooltip(bottle, bonus, ready)
 		else:
 			var empty_lbl := Label.new()
 			empty_lbl.text = "[ Empty ]"
@@ -76,6 +110,53 @@ func _refresh_rack() -> void:
 			vbox.add_child(empty_lbl)
 
 		%RackSlots.add_child(card)
+
+
+## Apply layered ingredient colors to a beaker, with aging tint shift.
+func _apply_bottle_layers(beaker: BeakerDisplay, bottle: BottledPerfume, progress: float) -> void:
+	if bottle.blend_summary.is_empty():
+		return
+	var total := 0
+	for entry in bottle.blend_summary:
+		total += int(entry["amount"])
+	if total == 0:
+		return
+
+	# Slight brown tint as aging progresses (richer color)
+	var age_tint := Color("6B4226")
+	var tint_strength := progress * 0.15
+
+	var layers: Array = []
+	for entry in bottle.blend_summary:
+		var frac := float(entry["amount"]) / float(total)
+		var col := BeakerDisplay.color_for_ingredient(entry["name"])
+		col = col.lerp(age_tint, tint_strength)
+		layers.append({ "color": col, "fraction": frac })
+	beaker.layers = layers
+
+	# Fallback liquid_color to the dominant ingredient
+	var best_entry = bottle.blend_summary[0]
+	for entry in bottle.blend_summary:
+		if int(entry["amount"]) > int(best_entry["amount"]):
+			best_entry = entry
+	var dominant_col := BeakerDisplay.color_for_ingredient(best_entry["name"])
+	beaker.liquid_color = dominant_col.lerp(age_tint, tint_strength)
+
+
+## Build a tooltip string with perfume details.
+func _build_tooltip(bottle: BottledPerfume, bonus: float, ready: bool) -> String:
+	var lines: Array[String] = []
+	var pname: String = bottle.display_name if bottle.display_name != "" else "Unnamed Perfume"
+	lines.append(pname)
+	lines.append("Blend: %s" % bottle.get_label())
+	lines.append("Base quality: %.1f (%s)" % [bottle.base_quality, bottle.tier])
+	lines.append("Age bonus: +%.2f / %.1f" % [bonus, CellarManager.AGE_CAP])
+	if ready:
+		lines.append("Fully aged and ready to retrieve!")
+	else:
+		var pct := int(bonus / CellarManager.AGE_CAP * 100.0)
+		lines.append("Aging... %d%% complete" % pct)
+	return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@ extends Node
 class_name MixingManager
 
 signal mixture_updated(current_mixture: Array[BaseIngredient], final_color: Color, final_scent: Vector3)
+signal accord_just_discovered(accords: Array[BaseAccord])
 
 var _current_mixture: Array[BaseIngredient] = []
 var _current_accords: Array[BaseAccord] = []
@@ -16,6 +17,28 @@ func add_ingredient(ingredient: BaseIngredient) -> void:
 func remove_ingredient(ingredient: BaseIngredient) -> void:
 	_current_mixture.erase(ingredient)
 	_emit_mixture_updated()
+
+## Removes the most recently added manual drop (not accord-expanded ones).
+## Returns true if a drop was removed, false if nothing to undo.
+func undo_last_drop() -> bool:
+	# Build set of indices that belong to accord expansions.
+	var accord_indices: Dictionary = {}
+	for r in _accord_ranges:
+		for i in range(r["start"], r["start"] + r["count"]):
+			accord_indices[i] = true
+
+	# Walk backwards to find the last manual drop.
+	for i in range(_current_mixture.size() - 1, -1, -1):
+		if not accord_indices.has(i):
+			_current_mixture.remove_at(i)
+			# Adjust accord ranges that come after the removed index.
+			for r in _accord_ranges:
+				if r["start"] > i:
+					r["start"] -= 1
+			_emit_mixture_updated()
+			return true
+	return false
+
 
 func add_accord(accord: BaseAccord) -> void:
 	_current_accords.append(accord)
@@ -70,6 +93,12 @@ func _emit_mixture_updated() -> void:
 	var final_color = _calculate_final_color()
 	var final_scent = _calculate_final_scent()
 	mixture_updated.emit(_current_mixture.duplicate(), final_color, final_scent)
+	# Live accord detection: check after every change (only fires for new discoveries).
+	if not _current_mixture.is_empty():
+		var blend := get_blend_summary()
+		var new_accords := AccordManager.check_blend_for_new_accords(blend)
+		if not new_accords.is_empty():
+			accord_just_discovered.emit(new_accords)
 
 
 # ---------------------------------------------------------------------------
@@ -142,8 +171,10 @@ func calculate_quality_breakdown(blend: Array) -> Dictionary:
 		return { "quality": 0.0, "tier": "Poor", "compatibility": 0.0, "balance": 1.0, "pyramid": 0.0 }
 
 	if blend.size() == 1:
-		var score: float = clampf((blend[0]["ingredient"] as BaseIngredient).intensity, 0.0, 10.0)
-		return { "quality": score, "tier": _get_tier(score), "compatibility": score, "balance": 1.0, "pyramid": 0.0 }
+		# A single ingredient can't make a great perfume — cap at Decent range.
+		var raw: float = (blend[0]["ingredient"] as BaseIngredient).intensity
+		var score: float = clampf(raw * 0.5, 0.0, 5.0)
+		return { "quality": score, "tier": _get_tier(score), "compatibility": raw, "balance": 1.0, "pyramid": 0.0 }
 
 	# --- 1. Compatibility score ---
 	var pair_count := 0
@@ -205,6 +236,106 @@ func get_current_breakdown() -> Dictionary:
 	return calculate_quality_breakdown(get_blend_summary())
 
 
+# ---------------------------------------------------------------------------
+# Hint Generation — explains what's helping or hurting the blend quality.
+# Returns 1-2 short, warm sentences for the player.
+# ---------------------------------------------------------------------------
+
+static func generate_hints(blend: Array, breakdown: Dictionary) -> String:
+	if blend.is_empty():
+		return ""
+
+	var quality: float = breakdown.get("quality", 0.0)
+	var tier: String = breakdown.get("tier", "Poor")
+	var balance: float = breakdown.get("balance", 1.0)
+	var compatibility: float = breakdown.get("compatibility", 0.0)
+	var pyramid: float = breakdown.get("pyramid", 0.0)
+
+	# --- Positive feedback for good blends ---
+	if tier == "Excellent":
+		return "A masterful blend — the scent families complement each other beautifully."
+	if tier == "Good":
+		var hints: Array[String] = []
+		hints.append("A well-balanced blend with good depth.")
+		if pyramid > 0.0:
+			hints.append("The layered notes give it a lovely complexity.")
+		return " ".join(hints)
+
+	# --- Identify problems for weaker blends (most relevant first) ---
+	var hints: Array[String] = []
+
+	# 1. Only one unique ingredient — not really a blend.
+	if blend.size() == 1:
+		hints.append("A single ingredient isn't much of a blend. Try mixing in something different to add complexity.")
+		return " ".join(hints)
+
+	# 2. Too few drops.
+	var total_drops := 0
+	for entry in blend:
+		total_drops += int(entry["amount"])
+	if total_drops <= 2:
+		hints.append("This blend is too thin. Add more drops to develop the scent.")
+		return " ".join(hints)
+
+	# 2. One ingredient dominates.
+	if balance < 1.0:
+		# Find the dominant ingredient.
+		var max_weighted := 0.0
+		var dominant_name := ""
+		var total_weighted := 0.0
+		for entry in blend:
+			var ing: BaseIngredient = entry["ingredient"]
+			var w: float = ing.intensity * float(entry["amount"])
+			total_weighted += w
+			if w > max_weighted:
+				max_weighted = w
+				dominant_name = ing.display_name
+		if total_weighted > 0.0 and max_weighted / total_weighted > 0.5:
+			hints.append("This blend is overpowered by %s. Try balancing it with other scents." % dominant_name)
+
+	# 3. Clashing scent families (low compatibility).
+	if compatibility < 5.0 and blend.size() >= 2:
+		# Find the worst-pairing pair.
+		var worst_score := 999.0
+		var worst_a := ""
+		var worst_b := ""
+		for i in range(blend.size()):
+			for j in range(i + 1, blend.size()):
+				var ing_a: BaseIngredient = blend[i]["ingredient"]
+				var ing_b: BaseIngredient = blend[j]["ingredient"]
+				if ing_a.scent_family != ing_b.scent_family:
+					var score := ScentCompatibility.get_compatibility(ing_a.scent_family, ing_b.scent_family)
+					if score < worst_score:
+						worst_score = score
+						worst_a = ing_a.scent_family
+						worst_b = ing_b.scent_family
+		if worst_score < 0.5 and worst_a != "":
+			hints.append("The %s and %s notes are clashing. Try ingredients that complement each other." % [worst_a, worst_b])
+		elif hints.is_empty():
+			hints.append("These scent families aren't harmonizing well. Try ingredients that complement each other.")
+
+	# 4. Missing note layers.
+	if pyramid == 0.0:
+		var note_positions: Dictionary = {}
+		for entry in blend:
+			note_positions[(entry["ingredient"] as BaseIngredient).note_position] = true
+		var missing: Array[String] = []
+		if not note_positions.has("top"):
+			missing.append("top")
+		if not note_positions.has("middle"):
+			missing.append("heart")
+		if not note_positions.has("base"):
+			missing.append("base")
+		if not missing.is_empty():
+			hints.append("This blend is missing %s notes. A complete perfume needs all three layers." % " and ".join(missing))
+
+	# Show the most important issue only — don't stack multiple hints.
+	if hints.size() > 1:
+		hints.resize(1)
+
+	return " ".join(hints)
+
+
 static func _get_tier(score: float) -> String:
 	if score >= 7.5:
 		return "Excellent"
@@ -234,7 +365,8 @@ const DEFAULT_FAMILY_COLOR := Color(0.6, 0.6, 0.6)
 
 
 ## Returns a dictionary with all live preview data for the current mixture.
-## Keys: "family_color", "description", "balance_ratio", "has_top", "has_middle", "has_base"
+## Keys: "family_color", "description", "balance_ratio", "has_top", "has_middle", "has_base",
+##       "family_weights" (normalised: dominant family = 1.0, others proportional)
 func get_live_preview() -> Dictionary:
 	var result := {
 		"family_color": Color(0.7, 0.85, 0.95, 0.25),
@@ -243,6 +375,7 @@ func get_live_preview() -> Dictionary:
 		"has_top": false,
 		"has_middle": false,
 		"has_base": false,
+		"family_weights": {},  # normalised weights for radar display
 	}
 
 	if _current_mixture.is_empty():
@@ -289,6 +422,54 @@ func get_live_preview() -> Dictionary:
 	# --- Description ---
 	result["description"] = _generate_description(family_weights, total_weighted, notes)
 
+	# --- Normalised family weights for radar display ---
+	# Dominant family → 1.0; others are proportional to it.
+	var max_w := 0.0
+	for f in family_weights:
+		if family_weights[f] > max_w:
+			max_w = family_weights[f]
+	var normalised: Dictionary = {}
+	if max_w > 0.0:
+		for f in family_weights:
+			normalised[f] = family_weights[f] / max_w
+	result["family_weights"] = normalised
+
+	# --- Per-ingredient layers for the beaker display ---
+	result["ingredient_layers"] = _build_ingredient_layers()
+
+	return result
+
+
+## Returns an array of { "color": Color, "fraction": float } for beaker layer display.
+## Each unique ingredient gets one layer, sorted by note position:
+## base notes at the bottom, middle in the center, top notes at the top.
+func _build_ingredient_layers() -> Array:
+	if _current_mixture.is_empty():
+		return []
+	var total_drops := _current_mixture.size()
+	var counts: Dictionary = {}
+	var order: Array[String] = []
+	var ing_map: Dictionary = {}  # name -> BaseIngredient
+	for ing in _current_mixture:
+		var name := ing.display_name
+		if not counts.has(name):
+			counts[name] = 0
+			order.append(name)
+			ing_map[name] = ing
+		counts[name] += 1
+	# Sort by note position: base at bottom (drawn first), middle, then top at top.
+	var note_order := { "base": 0, "middle": 1, "top": 2 }
+	order.sort_custom(func(a, b):
+		var a_pos: int = note_order.get(ing_map[a].note_position, 1)
+		var b_pos: int = note_order.get(ing_map[b].note_position, 1)
+		return a_pos < b_pos
+	)
+	var result: Array = []
+	for name in order:
+		result.append({
+			"color": BeakerDisplay.color_for_ingredient(name),
+			"fraction": float(counts[name]) / float(total_drops),
+		})
 	return result
 
 

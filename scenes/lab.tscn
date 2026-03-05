@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=4 uid="uid://vxi4lp8sg74d"]
+[gd_scene load_steps=13 format=4 uid="uid://vxi4lp8sg74d"]
 
 [ext_resource type="Texture2D" uid="uid://7ewu4qaavpl6" path="res://assets/PNG/decorative_cracks_floor.png" id="1_q4uld"]
 [ext_resource type="Texture2D" uid="uid://2q13emi0j68" path="res://assets/PNG/walls_floor.png" id="2_gipex"]
@@ -6,10 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://f745q6smv6r8" path="res://scenes/player.tscn" id="4_4kvtl"]
 [ext_resource type="PackedScene" path="res://scenes/door.tscn" id="5_f1r8i"]
 [ext_resource type="PackedScene" uid="uid://btgfvj4onlgj1" path="res://scenes/table.tscn" id="6_gipex"]
-[ext_resource type="PackedScene" path="res://scenes/cedar_bush.tscn" id="7_cedar"]
 [ext_resource type="PackedScene" path="res://scenes/request_board.tscn" id="7_rboard"]
 [ext_resource type="PackedScene" path="res://scenes/vanilla_bush.tscn" id="9_vanilla"]
-[ext_resource type="PackedScene" path="res://scenes/sandalwood_bush.tscn" id="11_sandalwood"]
 [ext_resource type="PackedScene" path="res://scenes/display_shelf.tscn" id="13_shelf"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_iywne"]
@@ -497,17 +495,8 @@ spawn_marker_name = "SpawnFromLab"
 [node name="SpawnFromOutside" type="Marker2D" parent="."]
 position = Vector2(16, 52)
 
-[node name="CedarBush" parent="." instance=ExtResource("7_cedar")]
-position = Vector2(150, 29)
-ingredient = null
-
 [node name="VanillaBush" parent="." instance=ExtResource("9_vanilla")]
 position = Vector2(115, -4)
-ingredient = null
-
-[node name="SandalwoodBush" parent="." instance=ExtResource("11_sandalwood")]
-position = Vector2(80, 30)
-ingredient = null
 
 [node name="RequestBoard" parent="." instance=ExtResource("7_rboard")]
 position = Vector2(-97, -70)

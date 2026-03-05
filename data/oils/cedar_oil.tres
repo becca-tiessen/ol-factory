@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Cedar Oil"
+description = "Warm heartwood steam-distilled to a rich amber oil."
+liquid_color = Color(0.35066357, 0.2947581, 0.051317222, 1)
+scent_family = "woody"
+intensity = 5.0
+note_position = "base"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

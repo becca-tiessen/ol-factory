@@ -164,7 +164,8 @@ func _rotate_request() -> void:
 # ---------------------------------------------------------------------------
 
 ## Attempt to deliver a bottle for the active request.
-## Returns { "success": bool, "feedback": String }.
+## Returns { "success": bool, "feedback": String, ... }.
+## On success also includes: "request", "npc_name", "npc_personality".
 ## Does NOT consume the bottle — caller should handle that on success.
 func deliver_request(bottle: BottledPerfume) -> Dictionary:
 	if active_request == null:
@@ -173,8 +174,11 @@ func deliver_request(bottle: BottledPerfume) -> Dictionary:
 	if not bottle.matches_request(active_request):
 		return { "success": false, "feedback": active_request.failure_feedback }
 
-	# Success — mark complete and grant reward.
+	# Success — capture request + NPC data before mutating state.
 	var completed_req := active_request
+	var npc_name := get_npc_name(completed_req)
+	var npc_personality := get_npc_personality(completed_req)
+
 	_completed_ids.append(completed_req.id)
 	var tier := completed_req.tier
 	_completed_count_per_tier[tier] = _completed_count_per_tier.get(tier, 0) + 1
@@ -192,20 +196,25 @@ func deliver_request(bottle: BottledPerfume) -> Dictionary:
 
 	_pick_request()
 	_save_progress()
-	return { "success": true, "feedback": feedback }
+	return {
+		"success": true,
+		"feedback": feedback,
+		"request": completed_req,
+		"npc_name": npc_name,
+		"npc_personality": npc_personality,
+	}
 
 
 func _grant_reward(request: BaseRequest) -> void:
-	match request.reward_type:
-		"coin":
-			CoinManager.add_coins(request.reward_amount)
-		"ingredient":
-			if request.reward_ingredient_path != "" and ResourceLoader.exists(request.reward_ingredient_path):
-				var ing := load(request.reward_ingredient_path) as BaseIngredient
-				if ing:
-					InventoryManager.add_ingredient(ing, request.reward_amount)
-		"hint":
-			pass  # reward_text contains the hint; the UI displays it.
+	# All requests grant coins (reward_amount).
+	if request.reward_amount > 0:
+		CoinManager.add_coins(request.reward_amount)
+	# Some requests also grant bonus ingredients.
+	if request.reward_ingredient_path != "" and request.reward_ingredient_amount > 0:
+		if ResourceLoader.exists(request.reward_ingredient_path):
+			var ing := load(request.reward_ingredient_path) as BaseIngredient
+			if ing:
+				InventoryManager.add_ingredient(ing, request.reward_ingredient_amount)
 
 
 # ---------------------------------------------------------------------------
@@ -239,7 +248,8 @@ func get_requirements_text(request: BaseRequest) -> String:
 	for family: String in request.required_families:
 		parts.append("%d+ %s" % [request.required_families[family], family])
 	for note: String in request.required_notes:
-		parts.append("%d+ %s note" % [request.required_notes[note], note])
+		var display_note := "heart" if note == "middle" else note
+		parts.append("%d+ %s note" % [request.required_notes[note], display_note])
 	if request.min_quality > 0.0:
 		parts.append("quality %.0f+" % request.min_quality)
 	if request.requires_accord:

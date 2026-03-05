@@ -1,13 +1,15 @@
-[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3]
 
 [ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_pep"]
+[ext_resource type="Resource" path="res://data/oils/peppermint_oil.tres" id="2_oil"]
 
 [resource]
 script = ExtResource("1_pep")
-display_name = "Peppermint"
-description = "Sharp and cooling with an intense green freshness."
+display_name = "Raw Peppermint"
+description = "Fresh leaves, sharp and cooling but unrefined."
 liquid_color = Color(0.30, 0.90, 0.45, 1)
 scent_family = "green"
 intensity = 8.0
 note_position = "top"
+result_item = ExtResource("2_oil")
 metadata/_custom_type_script = "uid://byhsqudpoueih"

@@ -5,21 +5,22 @@ extends BaseInteractableUI
 ## Buy: ingredient bundles and extra aging rack slots.
 
 const TIER_PRICES := {
-	"Poor": 5,
-	"Decent": 15,
-	"Good": 35,
-	"Excellent": 75,
+	"Poor": 3,
+	"Decent": 12,
+	"Good": 40,
+	"Excellent": 100,
 }
-const COINS_PER_AGE_TICK := 2
+## Aging multiplier: fully aged (cap 1.5) gives 1.5x base price.
+const AGING_MULTIPLIER := 1.5
 
 const BUNDLE_SIZE := 3
-const RACK_SLOT_PRICE := 25
+const RACK_SLOT_PRICE := 50
 
 ## Ingredient price by intensity bracket.
 const INGREDIENT_PRICES := {
-	"low": 10,   # intensity <= 5
-	"mid": 12,   # intensity 6-7
-	"high": 15,  # intensity >= 8
+	"low": 15,   # intensity <= 5
+	"mid": 20,   # intensity 6-7
+	"high": 25,  # intensity >= 8
 }
 
 enum Tab { SELL, BUY }
@@ -131,9 +132,12 @@ func _build_sell_tab() -> void:
 
 func _calculate_price(bottle: BottledPerfume) -> int:
 	var tier := bottle.get_final_tier()
-	var base_price: int = TIER_PRICES.get(tier, 5)
-	var age_ticks := int(bottle.age_bonus / 0.25)
-	return base_price + age_ticks * COINS_PER_AGE_TICK
+	var base_price: int = TIER_PRICES.get(tier, 3)
+	if bottle.aged and bottle.age_bonus > 0.0:
+		var age_fraction: float = bottle.age_bonus / CellarManager.AGE_CAP
+		var multiplier: float = 1.0 + (AGING_MULTIPLIER - 1.0) * age_fraction
+		return int(base_price * multiplier)
+	return base_price
 
 
 func _on_sell(bottle: BottledPerfume, price: int) -> void:
@@ -146,15 +150,18 @@ func _on_sell(bottle: BottledPerfume, price: int) -> void:
 # ---------------------------------------------------------------------------
 
 func _scan_ingredients() -> void:
-	var dir := DirAccess.open("res://data")
-	if dir == null:
-		return
-	for file_name in dir.get_files():
-		if not file_name.ends_with(".tres"):
+	for scan_path in ["res://data/", "res://data/oils/"]:
+		var dir := DirAccess.open(scan_path)
+		if dir == null:
 			continue
-		var res := load("res://data/" + file_name)
-		if res is BaseIngredient:
-			_all_ingredients.append(res)
+		for file_name in dir.get_files():
+			if not file_name.ends_with(".tres"):
+				continue
+			var res := load(scan_path + file_name)
+			if res is BaseIngredient:
+				var ing := res as BaseIngredient
+				if not (ing.result_item is BaseIngredient):
+					_all_ingredients.append(ing)
 	_all_ingredients.sort_custom(func(a, b): return a.display_name < b.display_name)
 
 

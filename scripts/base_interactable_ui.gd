@@ -3,6 +3,9 @@ extends CanvasLayer
 
 signal closed
 
+## How many interactable UIs are currently open (used for menu stacking guard).
+static var open_count: int = 0
+
 
 func _ready() -> void:
 	var panel = get_node_or_null("Panel")
@@ -24,6 +27,7 @@ func open() -> void:
 	var panel = get_node_or_null("Panel")
 	if panel:
 		panel.show()
+	open_count += 1
 	get_tree().root.set_input_as_handled()
 
 
@@ -31,6 +35,7 @@ func _close_ui() -> void:
 	var panel = get_node_or_null("Panel")
 	if panel:
 		panel.hide()
+	open_count = maxi(open_count - 1, 0)
 	closed.emit()
 	get_tree().root.set_input_as_handled()
 

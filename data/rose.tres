@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3 uid="uid://chjx1hio4hotd"]
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3 uid="uid://chjx1hio4hotd"]
 
 [ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_fcatk"]
+[ext_resource type="Resource" path="res://data/oils/rose_oil.tres" id="2_oil"]
 
 [resource]
 script = ExtResource("1_fcatk")
-display_name = "Rose"
+display_name = "Raw Rose"
+description = "Freshly gathered petals. Needs pressing before use."
 liquid_color = Color(1, 0.20784314, 0.32156864, 1)
 scent_family = "floral"
 intensity = 6.0
-note_position = "middle"
+result_item = ExtResource("2_oil")
 metadata/_custom_type_script = "uid://byhsqudpoueih"

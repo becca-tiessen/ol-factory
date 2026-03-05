@@ -1,15 +1,18 @@
-[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3 uid="uid://bqhatbmmbafml"]
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=4 format=3 uid="uid://bqhatbmmbafml"]
 
 [ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_d4fil"]
 [ext_resource type="Texture2D" uid="uid://s038v5l4g1os" path="res://assets/jasmine.png" id="1_im3tu"]
+[ext_resource type="Resource" path="res://data/oils/jasmine_oil.tres" id="3_oil"]
 
 [resource]
 script = ExtResource("1_d4fil")
-display_name = "Jasmine"
+display_name = "Raw Jasmine"
+description = "Fragrant white blossoms, still fresh from the vine."
 icon = ExtResource("1_im3tu")
 liquid_color = Color(1, 0.95, 0.8, 1)
 scent_profile = Vector3(0.8, 0.9, 0.7)
 scent_family = "floral"
 intensity = 7.0
 note_position = "middle"
+result_item = ExtResource("3_oil")
 metadata/_custom_type_script = "uid://byhsqudpoueih"

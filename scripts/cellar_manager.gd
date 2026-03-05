@@ -129,7 +129,11 @@ func is_ready(rack_index: int) -> bool:
 # Display shelf
 # ---------------------------------------------------------------------------
 
-func display_bottle(bottle: BottledPerfume) -> void:
+func display_bottle(bottle: BottledPerfume, custom_name: String = "") -> void:
+	if custom_name != "":
+		bottle.display_name = custom_name
+	elif bottle.display_name == "":
+		bottle.display_name = "Unnamed Perfume"
 	bottles.erase(bottle)
 	displayed_bottles.append(bottle)
 	bottles_changed.emit()

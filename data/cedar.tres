@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3 uid="uid://dpoyl8d731bp5"]
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3 uid="uid://dpoyl8d731bp5"]
 
 [ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_t4sbt"]
+[ext_resource type="Resource" path="res://data/oils/cedar_oil.tres" id="2_oil"]
 
 [resource]
 script = ExtResource("1_t4sbt")
-display_name = "Cedar"
+display_name = "Raw Cedar"
+description = "Rough bark shavings with a warm, earthy scent."
 liquid_color = Color(0.35066357, 0.2947581, 0.051317222, 1)
 scent_family = "woody"
-intensity = 5.0
 note_position = "base"
+result_item = ExtResource("2_oil")
 metadata/_custom_type_script = "uid://byhsqudpoueih"

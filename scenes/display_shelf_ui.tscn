@@ -7,16 +7,16 @@ layer = 10
 script = ExtResource("1_script")
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(800, 550)
+custom_minimum_size = Vector2(820, 580)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -275.0
-offset_right = 400.0
-offset_bottom = 275.0
+offset_left = -410.0
+offset_top = -290.0
+offset_right = 410.0
+offset_bottom = 290.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -44,10 +44,13 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="DisplayedList" type="VBoxContainer" parent="Panel/VBoxContainer/DisplayedScroll"]
+[node name="DisplayedGrid" type="HBoxContainer" parent="Panel/VBoxContainer/DisplayedScroll"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+theme_override_constants/separation = 16
 
 [node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
@@ -60,7 +63,7 @@ horizontal_alignment = 1
 [node name="InventoryScroll" type="ScrollContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 110)
 
 [node name="InventoryList" type="VBoxContainer" parent="Panel/VBoxContainer/InventoryScroll"]
 unique_name_in_owner = true
@@ -73,3 +76,49 @@ layout_mode = 2
 [node name="CloseButton" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 text = "Close (E)"
+
+[node name="NamingOverlay" type="PanelContainer" parent="Panel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -60.0
+offset_right = 160.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel/NamingOverlay"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PromptLabel" type="Label" parent="Panel/NamingOverlay/VBox"]
+layout_mode = 2
+text = "Name your perfume:"
+horizontal_alignment = 1
+
+[node name="NameInput" type="LineEdit" parent="Panel/NamingOverlay/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Essence of..."
+max_length = 40
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/NamingOverlay/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="ConfirmNameButton" type="Button" parent="Panel/NamingOverlay/VBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Confirm"
+
+[node name="SkipButton" type="Button" parent="Panel/NamingOverlay/VBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Skip"

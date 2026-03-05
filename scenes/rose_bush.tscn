@@ -10,8 +10,8 @@ radius = 22.472204
 [node name="RoseBush" type="Area2D"]
 collision_layer = 2
 collision_mask = 0
-ingredient = ExtResource("2_rose")
 script = ExtResource("1_6gvo2")
+ingredient = ExtResource("2_rose")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_6gvo2")

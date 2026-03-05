@@ -26,21 +26,25 @@ func _get_beaker_counts() -> Dictionary:
 	return counts
 
 
-# Scans the data/ directory and returns every .tres that is a BaseIngredient.
+# Scans data/ and data/oils/ for BaseIngredient resources.
+# Only returns processed oils (ingredients where result_item is null).
 func _load_all_ingredients() -> Array[BaseIngredient]:
 	var ingredients: Array[BaseIngredient] = []
-	var dir := DirAccess.open("res://data/")
-	if dir == null:
-		return ingredients
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if file_name.ends_with(".tres"):
-			var resource := load("res://data/" + file_name)
-			if resource is BaseIngredient:
-				ingredients.append(resource as BaseIngredient)
-		file_name = dir.get_next()
-	dir.list_dir_end()
+	for scan_path in ["res://data/", "res://data/oils/"]:
+		var dir := DirAccess.open(scan_path)
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var file_name := dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".tres"):
+				var resource := load(scan_path + file_name)
+				if resource is BaseIngredient:
+					var ing := resource as BaseIngredient
+					if not (ing.result_item is BaseIngredient):
+						ingredients.append(ing)
+			file_name = dir.get_next()
+		dir.list_dir_end()
 	return ingredients
 
 

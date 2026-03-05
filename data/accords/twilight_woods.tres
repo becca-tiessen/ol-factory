@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="BaseAccord" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BaseAccord" load_steps=2 format=3 uid="uid://bnd5k6asfmx16"]
 
-[ext_resource type="Script" path="res://scripts/base_accord.gd" id="1"]
+[ext_resource type="Script" uid="uid://cikvkdm3qn86c" path="res://scripts/base_accord.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,6 +9,6 @@ description = "Deep forest air as the sun slips below the trees."
 scent_family = "woody"
 note_position = "base"
 recipe = {
-"res://data/cedar.tres": 1,
-"res://data/sandalwood.tres": 1
+"res://data/oils/cedar_oil.tres": 1,
+"res://data/oils/sandalwood_oil.tres": 1
 }

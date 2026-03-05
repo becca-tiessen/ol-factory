@@ -10,5 +10,5 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.name == "Player" and target_scene != "":
 		# Store the marker name so we can find it in the new scene
 		SceneManager.spawn_marker_name = spawn_marker_name
-		# Change to the target scene
-		get_tree().change_scene_to_file(target_scene)
+		# Fade transition to the target scene
+		SceneManager.transition_to_scene(target_scene)

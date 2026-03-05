@@ -1,15 +1,25 @@
 extends BaseInteractableUI
 
-## Display shelf UI. Shows trophied perfumes and lets the player place or remove bottles.
+## Display shelf UI. Shows trophied perfumes as colored bottles on a visual shelf.
+## Includes naming prompt when placing a perfume, and a curated trophy view.
+
+const MAX_DISPLAY_SLOTS := 6
+
+var _pending_bottle: BottledPerfume = null
+
 
 func _ready() -> void:
 	super()
 	CellarManager.bottles_changed.connect(_refresh_all)
 	CellarManager.display_changed.connect(_refresh_all)
+	%ConfirmNameButton.pressed.connect(_on_confirm_name)
+	%SkipButton.pressed.connect(_on_skip_name)
+	%NameInput.text_submitted.connect(func(_t: String): _on_confirm_name())
 
 
 func open() -> void:
 	_refresh_all()
+	_hide_naming_overlay()
 	super()
 
 
@@ -19,67 +29,136 @@ func _refresh_all() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Displayed perfumes (trophies)
+# Trophy display — visual bottles with names
 # ---------------------------------------------------------------------------
 
 func _refresh_displayed() -> void:
-	for child in %DisplayedList.get_children():
+	for child in %DisplayedGrid.get_children():
 		child.queue_free()
 
 	if CellarManager.displayed_bottles.is_empty():
 		var lbl := Label.new()
-		lbl.text = "No perfumes on display yet."
+		lbl.text = "Your display shelf is empty.\nPlace a perfume to show it off!"
 		lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
-		%DisplayedList.add_child(lbl)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		%DisplayedGrid.add_child(lbl)
 		return
 
 	for bottle in CellarManager.displayed_bottles:
-		var card := PanelContainer.new()
-		var hbox := HBoxContainer.new()
-		card.add_child(hbox)
+		var slot := _create_display_slot(bottle)
+		%DisplayedGrid.add_child(slot)
 
-		var info := VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-		var name_lbl := Label.new()
-		name_lbl.text = bottle.get_label()
-		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		info.add_child(name_lbl)
+func _create_display_slot(bottle: BottledPerfume) -> VBoxContainer:
+	var slot := VBoxContainer.new()
+	slot.custom_minimum_size = Vector2(110, 0)
+	slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slot.alignment = BoxContainer.ALIGNMENT_CENTER
+	slot.add_theme_constant_override("separation", 4)
 
-		var summary_lbl := Label.new()
-		var families := {}
-		var notes := {}
-		for entry in bottle.blend_summary:
-			families[entry["family"]] = families.get(entry["family"], 0) + int(entry["amount"])
-			notes[entry["note"]] = notes.get(entry["note"], 0) + int(entry["amount"])
-		var family_parts: Array[String] = []
-		for f: String in families:
-			family_parts.append("%s x%d" % [f, families[f]])
-		summary_lbl.text = "Families: " + ", ".join(family_parts)
-		summary_lbl.add_theme_color_override("font_color", UITheme.SOFT_BLUE)
-		info.add_child(summary_lbl)
+	# Beaker with blended color layers
+	var beaker := BeakerDisplay.new()
+	beaker.custom_minimum_size = Vector2(50, 70)
+	beaker.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	beaker.fill_ratio = 0.65
+	_apply_bottle_layers(beaker, bottle)
+	slot.add_child(beaker)
 
-		var quality_lbl := Label.new()
-		quality_lbl.text = "%s — Quality: %.1f" % [bottle.get_final_tier(), bottle.get_final_quality()]
-		if bottle.aged:
-			quality_lbl.text += " (aged +%.2f)" % bottle.age_bonus
-		quality_lbl.add_theme_color_override("font_color", UITheme.WARM_AMBER)
-		info.add_child(quality_lbl)
+	# Perfume name
+	var name_lbl := Label.new()
+	var pname := bottle.display_name if bottle.display_name != "" else "Unnamed Perfume"
+	name_lbl.text = pname
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_lbl.add_theme_color_override("font_color", UITheme.HEADER_BROWN)
+	name_lbl.add_theme_font_size_override("font_size", 14)
+	slot.add_child(name_lbl)
 
-		hbox.add_child(info)
+	# Quality tier
+	var tier_lbl := Label.new()
+	tier_lbl.text = "%s — %.1f" % [bottle.get_final_tier(), bottle.get_final_quality()]
+	tier_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tier_lbl.add_theme_color_override("font_color", UITheme.WARM_AMBER)
+	tier_lbl.add_theme_font_size_override("font_size", 12)
+	slot.add_child(tier_lbl)
 
-		var remove_btn := Button.new()
-		remove_btn.text = "Remove"
-		remove_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var b := bottle
-		remove_btn.pressed.connect(func(): _on_remove(b))
-		hbox.add_child(remove_btn)
+	# Aged indicator
+	if bottle.aged:
+		var aged_lbl := Label.new()
+		aged_lbl.text = "Aged"
+		aged_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		aged_lbl.add_theme_color_override("font_color", UITheme.SOFT_GREEN)
+		aged_lbl.add_theme_font_size_override("font_size", 11)
+		slot.add_child(aged_lbl)
 
-		%DisplayedList.add_child(card)
+	# Remove button
+	var remove_btn := Button.new()
+	remove_btn.text = "Remove"
+	remove_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var b := bottle
+	remove_btn.pressed.connect(func(): _on_remove(b))
+	slot.add_child(remove_btn)
+
+	return slot
+
+
+func _apply_bottle_layers(beaker: BeakerDisplay, bottle: BottledPerfume) -> void:
+	if bottle.blend_summary.is_empty():
+		return
+	var total := 0
+	for entry in bottle.blend_summary:
+		total += int(entry["amount"])
+	if total == 0:
+		return
+	var layers: Array = []
+	for entry in bottle.blend_summary:
+		var frac := float(entry["amount"]) / float(total)
+		var col := BeakerDisplay.color_for_ingredient(entry["name"])
+		layers.append({ "color": col, "fraction": frac })
+	beaker.layers = layers
+	# Also set fallback liquid_color to the dominant ingredient color
+	var best_entry = bottle.blend_summary[0]
+	for entry in bottle.blend_summary:
+		if int(entry["amount"]) > int(best_entry["amount"]):
+			best_entry = entry
+	beaker.liquid_color = BeakerDisplay.color_for_ingredient(best_entry["name"])
 
 
 # ---------------------------------------------------------------------------
-# Bottles available to place on shelf
+# Naming overlay
+# ---------------------------------------------------------------------------
+
+func _show_naming_overlay() -> void:
+	%NamingOverlay.show()
+	%NameInput.text = ""
+	%NameInput.grab_focus()
+
+
+func _hide_naming_overlay() -> void:
+	%NamingOverlay.hide()
+	_pending_bottle = null
+
+
+func _on_confirm_name() -> void:
+	if _pending_bottle == null:
+		_hide_naming_overlay()
+		return
+	var custom_name: String = %NameInput.text.strip_edges()
+	CellarManager.display_bottle(_pending_bottle, custom_name)
+	_hide_naming_overlay()
+
+
+func _on_skip_name() -> void:
+	if _pending_bottle == null:
+		_hide_naming_overlay()
+		return
+	CellarManager.display_bottle(_pending_bottle, "")
+	_hide_naming_overlay()
+
+
+# ---------------------------------------------------------------------------
+# Inventory — bottles available to place
 # ---------------------------------------------------------------------------
 
 func _refresh_inventory() -> void:
@@ -93,6 +172,8 @@ func _refresh_inventory() -> void:
 		%InventoryList.add_child(lbl)
 		return
 
+	var can_display := CellarManager.displayed_bottles.size() < MAX_DISPLAY_SLOTS
+
 	for bottle in CellarManager.bottles:
 		var hbox := HBoxContainer.new()
 
@@ -103,17 +184,35 @@ func _refresh_inventory() -> void:
 		hbox.add_child(info)
 
 		var display_btn := Button.new()
-		display_btn.text = "Display"
-		var b := bottle
-		display_btn.pressed.connect(func(): _on_display(b))
+		if can_display:
+			display_btn.text = "Display"
+			var b := bottle
+			display_btn.pressed.connect(func(): _on_display(b))
+		else:
+			display_btn.text = "Shelf Full"
+			display_btn.disabled = true
 		hbox.add_child(display_btn)
 
 		%InventoryList.add_child(hbox)
 
 
 func _on_display(bottle: BottledPerfume) -> void:
-	CellarManager.display_bottle(bottle)
+	_pending_bottle = bottle
+	_show_naming_overlay()
 
 
 func _on_remove(bottle: BottledPerfume) -> void:
 	CellarManager.undisplay_bottle(bottle)
+
+
+# ---------------------------------------------------------------------------
+# Block closing while naming overlay is open
+# ---------------------------------------------------------------------------
+
+func _unhandled_input(event: InputEvent) -> void:
+	if %NamingOverlay.visible:
+		if event.is_action_pressed("interact") or event.is_action_pressed("ui_cancel"):
+			_hide_naming_overlay()
+			get_tree().root.set_input_as_handled()
+		return
+	super(event)

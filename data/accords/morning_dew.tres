@@ -9,6 +9,6 @@ description = "Crisp and electric, like the first breath of dawn."
 scent_family = "green"
 note_position = "top"
 recipe = {
-"res://data/peppermint.tres": 1,
-"res://data/bergamot.tres": 1
+"res://data/oils/peppermint_oil.tres": 1,
+"res://data/oils/bergamot_oil.tres": 1
 }

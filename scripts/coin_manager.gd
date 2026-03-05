@@ -6,11 +6,17 @@ signal coins_changed
 
 const SAVE_PATH := "user://coin_data.json"
 
+const STARTING_COINS := 10
+
 var coins: int = 0
 
 
 func _ready() -> void:
+	var is_new_player := not FileAccess.file_exists(SAVE_PATH)
 	_load_data()
+	if is_new_player:
+		coins = STARTING_COINS
+		_save_data()
 
 
 func add_coins(amount: int) -> void:

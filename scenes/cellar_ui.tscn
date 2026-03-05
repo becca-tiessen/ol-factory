@@ -40,7 +40,7 @@ horizontal_alignment = 1
 [node name="RackSlots" type="HBoxContainer" parent="Panel/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 140)
+custom_minimum_size = Vector2(0, 200)
 alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]

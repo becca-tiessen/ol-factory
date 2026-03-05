@@ -20,6 +20,7 @@ class_name BaseRequest
 @export var reward_type: String = "coin"  # "coin", "ingredient", "hint"
 @export var reward_ingredient_path: String = ""
 @export var reward_amount: int = 0
+@export var reward_ingredient_amount: int = 0
 
 # Feedback on failed delivery
 @export var failure_feedback: String = ""
@@ -42,5 +43,6 @@ static func from_dict(data: Dictionary) -> BaseRequest:
 	req.reward_type = data.get("reward_type", "coin")
 	req.reward_ingredient_path = data.get("reward_ingredient_path", "")
 	req.reward_amount = int(data.get("reward_amount", 0))
+	req.reward_ingredient_amount = int(data.get("reward_ingredient_amount", 0))
 	req.failure_feedback = data.get("failure_feedback", "")
 	return req

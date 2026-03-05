@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3 uid="uid://chy0m0id6no5i"]
 
 [ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_ber"]
+[ext_resource type="Resource" path="res://data/oils/bergamot_oil.tres" id="2_oil"]
 
 [resource]
 script = ExtResource("1_ber")
-display_name = "Bergamot"
-description = "Bright citrus with a floral, slightly spicy edge."
-liquid_color = Color(0.70, 0.90, 0.30, 1)
+display_name = "Raw Bergamot"
+description = "Unpeeled citrus rind, bright and zesty."
+liquid_color = Color(0.7, 0.9, 0.3, 1)
 scent_family = "citrus"
-intensity = 5.0
 note_position = "top"
+result_item = ExtResource("2_oil")
 metadata/_custom_type_script = "uid://byhsqudpoueih"

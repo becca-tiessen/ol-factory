@@ -9,6 +9,6 @@ description = "Blossoms tangled in ancient branches."
 scent_family = "floral"
 note_position = "middle"
 recipe = {
-"res://data/jasmine.tres": 1,
-"res://data/cedar.tres": 1
+"res://data/oils/jasmine_oil.tres": 1,
+"res://data/oils/cedar_oil.tres": 1
 }

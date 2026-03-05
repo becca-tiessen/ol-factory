@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Sandalwood Oil"
+description = "Smooth heartwood yielding a creamy, milky essence."
+liquid_color = Color(0.76, 0.60, 0.42, 1)
+scent_family = "woody"
+intensity = 6.0
+note_position = "base"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

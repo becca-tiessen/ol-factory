@@ -3,7 +3,15 @@
     "allow": [
       "Bash(ls -la /Users/rebeccatiessen/ol-factory/data/*.tres)",
       "Bash(grep -n \"collision_layer\\\\|collision_mask\" /Users/rebeccatiessen/ol-factory/scenes/*.tscn)",
-      "Read(//Users/rebeccatiessen/**)"
+      "Read(//Users/rebeccatiessen/**)",
+      "Bash(ls /Users/rebeccatiessen/ol-factory/data/*.tres)",
+      "Bash(grep -l \"display_shelf\" /Users/rebeccatiessen/ol-factory/scenes/*.tscn)",
+      "Bash(grep -n \"result_item\\\\|is_raw\" /Users/rebeccatiessen/ol-factory/data/*.tres)",
+      "Bash(grep -l \"res://data/\" /Users/rebeccatiessen/ol-factory/data/accords/*.tres)"
+    ],
+    "additionalDirectories": [
+      "/Users/rebeccatiessen/ol-factory",
+      "/Users/rebeccatiessen/ol-factory/data"
     ]
   }
 }

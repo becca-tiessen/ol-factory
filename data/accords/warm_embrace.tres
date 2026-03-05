@@ -9,6 +9,6 @@ description = "A comforting blanket of sweetness and smoke."
 scent_family = "sweet"
 note_position = "base"
 recipe = {
-"res://data/vanilla.tres": 1,
-"res://data/sandalwood.tres": 1
+"res://data/oils/vanilla_oil.tres": 1,
+"res://data/oils/sandalwood_oil.tres": 1
 }

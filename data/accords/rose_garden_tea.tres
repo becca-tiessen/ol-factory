@@ -9,7 +9,7 @@ description = "A delicate cup steeped with petals and mint."
 scent_family = "floral"
 note_position = "middle"
 recipe = {
-"res://data/rose.tres": 1,
-"res://data/vanilla.tres": 1,
-"res://data/peppermint.tres": 1
+"res://data/oils/rose_oil.tres": 1,
+"res://data/oils/vanilla_oil.tres": 1,
+"res://data/oils/peppermint_oil.tres": 1
 }

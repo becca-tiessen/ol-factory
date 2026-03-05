@@ -71,6 +71,31 @@ func _blend_matches_recipe(blend_counts: Dictionary, recipe: Dictionary) -> bool
 	return true
 
 
+## Live detection: check blend for new accords using exact-match logic.
+## Called after each drop during mixing. Returns newly discovered accords.
+## The blend must contain exactly the recipe ingredients — no extras.
+func check_blend_for_new_accords(blend: Array) -> Array[BaseAccord]:
+	var blend_counts: Dictionary = {}
+	for entry in blend:
+		var ing: BaseIngredient = entry["ingredient"]
+		blend_counts[ing.resource_path] = int(entry["amount"])
+
+	var newly_discovered: Array[BaseAccord] = []
+	for accord in _all_accords:
+		if _discovered.has(accord.resource_path):
+			continue
+		if _blend_matches_recipe(blend_counts, accord.recipe):
+			_discovered[accord.resource_path] = true
+			newly_discovered.append(accord)
+			accord_discovered.emit(accord)
+
+	if not newly_discovered.is_empty():
+		accords_changed.emit()
+		_save_discovered()
+
+	return newly_discovered
+
+
 func get_all_accords() -> Array[BaseAccord]:
 	return _all_accords
 

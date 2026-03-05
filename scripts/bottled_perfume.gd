@@ -13,6 +13,8 @@ var total_drops: int = 0
 var age_bonus: float = 0.0
 var aged: bool = false
 var has_accord: bool = false
+## Custom name given by the player when displaying on the shelf.
+var display_name: String = ""
 
 
 static func create_from_blend(blend: Array, bd: Dictionary, accords_used: Array = []) -> BottledPerfume:
@@ -94,7 +96,7 @@ func matches_request(request: BaseRequest) -> bool:
 
 ## Serialize to a dictionary for saving.
 func to_dict() -> Dictionary:
-	return {
+	var d := {
 		"blend_summary": blend_summary.duplicate(true),
 		"base_quality": base_quality,
 		"tier": tier,
@@ -104,6 +106,9 @@ func to_dict() -> Dictionary:
 		"aged": aged,
 		"has_accord": has_accord,
 	}
+	if display_name != "":
+		d["display_name"] = display_name
+	return d
 
 
 ## Reconstruct from a saved dictionary.
@@ -117,4 +122,5 @@ static func from_dict(data: Dictionary) -> BottledPerfume:
 	bottle.age_bonus = float(data.get("age_bonus", 0.0))
 	bottle.aged = bool(data.get("aged", false))
 	bottle.has_accord = bool(data.get("has_accord", false))
+	bottle.display_name = data.get("display_name", "")
 	return bottle

@@ -15,5 +15,8 @@ func get_input():
 	velocity = input_direction * speed
 
 func _physics_process(delta):
+	if BaseInteractableUI.open_count > 0 or InventoryUI.is_open:
+		velocity = Vector2.ZERO
+		return
 	get_input()
 	move_and_slide()

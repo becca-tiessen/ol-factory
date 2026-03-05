@@ -9,6 +9,6 @@ description = "Sun-warmed petals kissed by citrus zest."
 scent_family = "floral"
 note_position = "top"
 recipe = {
-"res://data/rose.tres": 1,
-"res://data/bergamot.tres": 1
+"res://data/oils/rose_oil.tres": 1,
+"res://data/oils/bergamot_oil.tres": 1
 }
