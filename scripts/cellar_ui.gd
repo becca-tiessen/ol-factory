@@ -32,6 +32,7 @@ func _refresh_rack() -> void:
 	for i in range(CellarManager.get_rack_slots()):
 		var card := PanelContainer.new()
 		card.custom_minimum_size = Vector2(160, 0)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var vbox := VBoxContainer.new()
 		card.add_child(vbox)
 
@@ -44,7 +45,7 @@ func _refresh_rack() -> void:
 			var name_lbl := Label.new()
 			name_lbl.text = bottle.get_label()
 			name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			name_lbl.custom_minimum_size = Vector2(140, 0)
+			name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			vbox.add_child(name_lbl)
 
 			var quality_lbl := Label.new()

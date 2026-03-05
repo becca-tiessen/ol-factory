@@ -11,8 +11,8 @@ radius = 22.0
 collision_layer = 2
 collision_mask = 0
 modulate = Color(1.0, 1.0, 0.82, 1)
-ingredient = ExtResource("3_ing")
 script = ExtResource("1_script")
+ingredient = ExtResource("3_ing")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_1")

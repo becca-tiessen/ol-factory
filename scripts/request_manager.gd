@@ -239,7 +239,8 @@ func get_requirements_text(request: BaseRequest) -> String:
 	for family: String in request.required_families:
 		parts.append("%d+ %s" % [request.required_families[family], family])
 	for note: String in request.required_notes:
-		parts.append("%d+ %s note" % [request.required_notes[note], note])
+		var display_note := "heart" if note == "middle" else note
+		parts.append("%d+ %s note" % [request.required_notes[note], display_note])
 	if request.min_quality > 0.0:
 		parts.append("quality %.0f+" % request.min_quality)
 	if request.requires_accord:

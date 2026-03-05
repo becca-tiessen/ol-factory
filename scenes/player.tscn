@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://f745q6smv6r8"]
+[gd_scene load_steps=10 format=3 uid="uid://f745q6smv6r8"]
 
 [ext_resource type="Texture2D" uid="uid://covptkkl3ljqy" path="res://assets/16x16/16x16 Idle-Sheet.png" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://dfxlx2p5fmnix" path="res://scripts/player.gd" id="1_g2els"]
@@ -43,6 +43,9 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_4flbx"]
 radius = 5.0
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
+radius = 20.0
+
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_g2els")
 
@@ -67,7 +70,7 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="InteractionShape" type="CollisionShape2D" parent="InteractionArea"]
-shape = SubResource("CircleShape2D_4flbx")
+shape = SubResource("CircleShape2D_interact")
 
 [node name="PlayerInteraction" type="Node" parent="."]
 script = ExtResource("2_interact")

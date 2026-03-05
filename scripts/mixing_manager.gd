@@ -17,6 +17,28 @@ func remove_ingredient(ingredient: BaseIngredient) -> void:
 	_current_mixture.erase(ingredient)
 	_emit_mixture_updated()
 
+## Removes the most recently added manual drop (not accord-expanded ones).
+## Returns true if a drop was removed, false if nothing to undo.
+func undo_last_drop() -> bool:
+	# Build set of indices that belong to accord expansions.
+	var accord_indices: Dictionary = {}
+	for r in _accord_ranges:
+		for i in range(r["start"], r["start"] + r["count"]):
+			accord_indices[i] = true
+
+	# Walk backwards to find the last manual drop.
+	for i in range(_current_mixture.size() - 1, -1, -1):
+		if not accord_indices.has(i):
+			_current_mixture.remove_at(i)
+			# Adjust accord ranges that come after the removed index.
+			for r in _accord_ranges:
+				if r["start"] > i:
+					r["start"] -= 1
+			_emit_mixture_updated()
+			return true
+	return false
+
+
 func add_accord(accord: BaseAccord) -> void:
 	_current_accords.append(accord)
 	# Expand accord's recipe into component ingredients for scoring.
@@ -234,7 +256,8 @@ const DEFAULT_FAMILY_COLOR := Color(0.6, 0.6, 0.6)
 
 
 ## Returns a dictionary with all live preview data for the current mixture.
-## Keys: "family_color", "description", "balance_ratio", "has_top", "has_middle", "has_base"
+## Keys: "family_color", "description", "balance_ratio", "has_top", "has_middle", "has_base",
+##       "family_weights" (normalised: dominant family = 1.0, others proportional)
 func get_live_preview() -> Dictionary:
 	var result := {
 		"family_color": Color(0.7, 0.85, 0.95, 0.25),
@@ -243,6 +266,7 @@ func get_live_preview() -> Dictionary:
 		"has_top": false,
 		"has_middle": false,
 		"has_base": false,
+		"family_weights": {},  # normalised weights for radar display
 	}
 
 	if _current_mixture.is_empty():
@@ -289,6 +313,46 @@ func get_live_preview() -> Dictionary:
 	# --- Description ---
 	result["description"] = _generate_description(family_weights, total_weighted, notes)
 
+	# --- Normalised family weights for radar display ---
+	# Dominant family → 1.0; others are proportional to it.
+	var max_w := 0.0
+	for f in family_weights:
+		if family_weights[f] > max_w:
+			max_w = family_weights[f]
+	var normalised: Dictionary = {}
+	if max_w > 0.0:
+		for f in family_weights:
+			normalised[f] = family_weights[f] / max_w
+	result["family_weights"] = normalised
+
+	# --- Per-ingredient layers for the beaker display ---
+	result["ingredient_layers"] = _build_ingredient_layers()
+
+	return result
+
+
+## Returns an array of { "color": Color, "fraction": float } for beaker layer display.
+## Each unique ingredient gets one layer, ordered by first appearance.
+func _build_ingredient_layers() -> Array:
+	if _current_mixture.is_empty():
+		return []
+	var total_drops := _current_mixture.size()
+	var counts: Dictionary = {}
+	var order: Array[String] = []
+	var ing_map: Dictionary = {}  # name -> BaseIngredient
+	for ing in _current_mixture:
+		var name := ing.display_name
+		if not counts.has(name):
+			counts[name] = 0
+			order.append(name)
+			ing_map[name] = ing
+		counts[name] += 1
+	var result: Array = []
+	for name in order:
+		result.append({
+			"color": BeakerDisplay.color_for_ingredient(name),
+			"fraction": float(counts[name]) / float(total_drops),
+		})
 	return result
 
 

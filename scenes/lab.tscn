@@ -499,15 +499,12 @@ position = Vector2(16, 52)
 
 [node name="CedarBush" parent="." instance=ExtResource("7_cedar")]
 position = Vector2(150, 29)
-ingredient = null
 
 [node name="VanillaBush" parent="." instance=ExtResource("9_vanilla")]
 position = Vector2(115, -4)
-ingredient = null
 
 [node name="SandalwoodBush" parent="." instance=ExtResource("11_sandalwood")]
 position = Vector2(80, 30)
-ingredient = null
 
 [node name="RequestBoard" parent="." instance=ExtResource("7_rboard")]
 position = Vector2(-97, -70)

@@ -2,9 +2,8 @@ extends BaseInteractableUI
 
 var mixing_manager: MixingManager
 var _committed := false
-var _request_tracker_name: Label
-var _request_tracker_reqs: Label
 var _bottle: BeakerDisplay
+var _radar: ScentRadarGraph
 var _celebration_card: PanelContainer
 var _celebration_tween: Tween
 
@@ -17,34 +16,35 @@ func _ready() -> void:
 		if grid_container:
 			grid_container.mixing_manager = mixing_manager
 
-	# Store reference before reparenting
+	# Store references before any reparenting.
 	_bottle = %Bottle
+	_radar  = %ScentRadar as ScentRadarGraph
 
 	%CommitButton.pressed.connect(_on_commit_pressed)
+	%UndoButton.pressed.connect(_on_undo_pressed)
 	%ClearButton.pressed.connect(_on_clear_pressed)
 
 	# Style the action buttons
 	UITheme.style_commit_button(%CommitButton)
+	UITheme.style_clear_button(%UndoButton)
 	UITheme.style_clear_button(%ClearButton)
 
 	# Wrap beaker in a wooden-shelf panel
 	_add_beaker_shelf()
 
-	_build_request_tracker()
+	# Style request banner
+	%RequestName.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+	%RequestReqs.add_theme_color_override("font_color", UITheme.SOFT_BLUE)
+	%RequestReqs.add_theme_font_size_override("font_size", 12)
+
+	# Style the note pyramid legend
+	_style_pyramid_legend()
+
 	RequestManager.request_changed.connect(_update_request_tracker)
+	_update_request_tracker()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# If celebration card is showing, any click or key dismisses it early.
-	if _celebration_card and is_instance_valid(_celebration_card):
-		if event is InputEventMouseButton and event.pressed:
-			_dismiss_celebration()
-			get_tree().root.set_input_as_handled()
-			return
-		if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept"):
-			_dismiss_celebration()
-			get_tree().root.set_input_as_handled()
-			return
 	super(event)
 
 
@@ -70,19 +70,25 @@ func _on_mixture_updated(current_mixture: Array[BaseIngredient], _final_color: C
 	# Get live preview data from mixing manager.
 	var preview := mixing_manager.get_live_preview()
 
-	# Update the beaker visual with family-blended color.
-	_bottle.liquid_color = preview["family_color"]
+	# Update the beaker visual with per-ingredient color layers.
+	_bottle.layers = preview.get("ingredient_layers", [])
+	_bottle.liquid_color = preview["family_color"]  # fallback if layers empty
 	_bottle.fill_ratio = clampf(float(current_mixture.size()) / 12.0, 0.0, 1.0)
 
 	# Update live feedback.
 	_update_live_feedback(preview, current_mixture.is_empty())
 
+	# Update radar chart.
+	if _radar:
+		_radar.set_weights(preview.get("family_weights", {}))
+
 	_update_blend_display(current_mixture)
 	# Refresh ingredient list so available counts stay in sync.
 	%GridContainer._refresh()
-	# Enable/disable commit button based on whether beaker has contents.
+	# Enable/disable buttons based on whether beaker has contents.
 	if not _committed:
 		%CommitButton.disabled = current_mixture.is_empty()
+		%UndoButton.disabled = current_mixture.is_empty()
 
 
 func _update_blend_display(mixture: Array[BaseIngredient]) -> void:
@@ -109,16 +115,15 @@ func _update_blend_display(mixture: Array[BaseIngredient]) -> void:
 	var accord_summary := mixing_manager.get_accord_summary()
 	for entry in accord_summary:
 		var accord: BaseAccord = entry["accord"]
-		var lbl := Label.new()
-		lbl.text = "%s  x%d" % [accord.accord_name, entry["count"]]
-		lbl.add_theme_color_override("font_color", UITheme.WARM_AMBER)
-		%BlendList.add_child(lbl)
+		var row := _make_blend_row(UITheme.WARM_AMBER, "%s  x%d" % [accord.accord_name, entry["count"]], UITheme.WARM_AMBER)
+		%BlendList.add_child(row)
 
-	# Then show raw ingredients.
-	for ing_name in order:
-		var lbl := Label.new()
-		lbl.text = "%s  x%d" % [ing_name, counts[ing_name]]
-		%BlendList.add_child(lbl)
+	# Show raw ingredients in reverse order so the list top matches the beaker top.
+	for i in range(order.size() - 1, -1, -1):
+		var ing_name: String = order[i]
+		var dot_color := BeakerDisplay.color_for_ingredient(ing_name)
+		var row := _make_blend_row(dot_color, "%s  x%d" % [ing_name, counts[ing_name]])
+		%BlendList.add_child(row)
 
 
 func _on_commit_pressed() -> void:
@@ -158,8 +163,14 @@ func _on_commit_pressed() -> void:
 	_committed = true
 	_update_ui_state()
 
-	# Start the celebration sequence (includes accord discoveries if any).
+	# Start the celebration sequence — scoring is revealed inside the card.
 	_start_celebration(bd, placed_on_rack, new_accords)
+
+
+func _on_undo_pressed() -> void:
+	if _committed or not mixing_manager:
+		return
+	mixing_manager.undo_last_drop()
 
 
 func _on_clear_pressed() -> void:
@@ -171,7 +182,9 @@ func _on_clear_pressed() -> void:
 
 
 func _update_ui_state() -> void:
-	%CommitButton.disabled = _committed or mixing_manager == null or mixing_manager.get_current_mixture().is_empty()
+	var is_empty := mixing_manager == null or mixing_manager.get_current_mixture().is_empty()
+	%CommitButton.disabled = _committed or is_empty
+	%UndoButton.disabled = _committed or is_empty
 	%ClearButton.disabled = _committed
 	%GridContainer.committed = _committed
 	%GridContainer._refresh()
@@ -183,11 +196,11 @@ func _update_live_feedback(preview: Dictionary, is_empty: bool) -> void:
 
 	# Note indicators — dim when absent, bright when present.
 	%TopNote.modulate = Color.WHITE
-	%MidNote.modulate = Color.WHITE
+	%HeartNote.modulate = Color.WHITE
 	%BaseNote.modulate = Color.WHITE
 
 	%TopNote.add_theme_color_override("font_color", UITheme.NOTE_LIT if preview["has_top"] else UITheme.NOTE_DIM)
-	%MidNote.add_theme_color_override("font_color", UITheme.NOTE_LIT if preview["has_middle"] else UITheme.NOTE_DIM)
+	%HeartNote.add_theme_color_override("font_color", UITheme.NOTE_LIT if preview["has_middle"] else UITheme.NOTE_DIM)
 	%BaseNote.add_theme_color_override("font_color", UITheme.NOTE_LIT if preview["has_base"] else UITheme.NOTE_DIM)
 
 	# Balance bar.
@@ -207,61 +220,53 @@ func _update_live_feedback(preview: Dictionary, is_empty: bool) -> void:
 
 
 func _reset_results() -> void:
-	%QualityLabel.text = "Quality: --"
-	%TierLabel.text = "Tier: --"
-	%CompatLabel.text = "Compatibility: --"
-	%BalanceLabel.text = "Balance: --"
-	%PyramidLabel.text = "Pyramid: --"
-	%BottledLabel.hide()
 	# Reset live feedback.
 	%DescriptionLabel.text = ""
 	%TopNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
-	%MidNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
+	%HeartNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
 	%BaseNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
 	%BalanceBar.value = 0.0
 	%BalanceHint.text = ""
 
 
-func _build_request_tracker() -> void:
-	var result_col = %BottledLabel.get_parent()
-	if result_col == null:
-		return
-
-	var sep := HSeparator.new()
-	result_col.add_child(sep)
-
-	var title := Label.new()
-	title.text = "Active Request"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UITheme.style_section_title(title)
-	result_col.add_child(title)
-
-	_request_tracker_name = Label.new()
-	_request_tracker_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_request_tracker_name.add_theme_color_override("font_color", UITheme.WARM_AMBER)
-	result_col.add_child(_request_tracker_name)
-
-	_request_tracker_reqs = Label.new()
-	_request_tracker_reqs.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_request_tracker_reqs.add_theme_color_override("font_color", UITheme.SOFT_BLUE)
-	_request_tracker_reqs.add_theme_font_size_override("font_size", 12)
-	result_col.add_child(_request_tracker_reqs)
-
-	_update_request_tracker()
-
-
 func _update_request_tracker() -> void:
-	if _request_tracker_name == null:
-		return
 	var req := RequestManager.active_request
 	if req == null:
-		_request_tracker_name.text = "(No active request)"
-		_request_tracker_name.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
-		_request_tracker_reqs.text = ""
+		%RequestName.text = "(No active request)"
+		%RequestName.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+		%RequestReqs.text = ""
 		return
-	_request_tracker_name.add_theme_color_override("font_color", UITheme.WARM_AMBER)
-	_request_tracker_name.text = req.request_name
-	_request_tracker_reqs.text = RequestManager.get_requirements_text(req)
+	%RequestName.add_theme_color_override("font_color", UITheme.WARM_AMBER)
+	%RequestName.text = req.request_name
+	%RequestReqs.text = RequestManager.get_requirements_text(req)
+
+
+func _clear_live_feedback() -> void:
+	%DescriptionLabel.text = ""
+	%TopNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
+	%HeartNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
+	%BaseNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
+	%BalanceBar.value = 0.0
+	%BalanceHint.text = ""
+
+
+func _make_blend_row(dot_color: Color, text: String, text_color: Color = Color.WHITE) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+
+	var dot := ColorRect.new()
+	dot.custom_minimum_size = Vector2(10, 10)
+	dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	dot.color = dot_color
+	row.add_child(dot)
+
+	var lbl := Label.new()
+	lbl.text = text
+	if text_color != Color.WHITE:
+		lbl.add_theme_color_override("font_color", text_color)
+	row.add_child(lbl)
+
+	return row
 
 
 # ---------------------------------------------------------------------------
@@ -269,12 +274,14 @@ func _update_request_tracker() -> void:
 # ---------------------------------------------------------------------------
 
 func _start_celebration(bd: Dictionary, placed_on_rack: bool, new_accords: Array[BaseAccord] = []) -> void:
-	# 1. Clear the blend list and right-side breakdown immediately.
+	# 1. Clear the blend list and live feedback immediately (scoring section stays visible).
 	for child in %BlendList.get_children():
 		child.queue_free()
-	_clear_breakdown()
+	_clear_live_feedback()
 
-	# 2. Drain the beaker liquid over 0.5s.
+	# 2. Drain the beaker liquid over 0.5s (collapse layers into single color for smooth drain).
+	_bottle.liquid_color = _bottle.liquid_color  # keep current fallback color
+	_bottle.layers = []
 	if _celebration_tween:
 		_celebration_tween.kill()
 	_celebration_tween = create_tween()
@@ -283,9 +290,7 @@ func _start_celebration(bd: Dictionary, placed_on_rack: bool, new_accords: Array
 	# 3. Show celebration card after the drain finishes.
 	_celebration_tween.tween_callback(_show_celebration_card.bind(bd, placed_on_rack, new_accords))
 
-	# 4. Auto-dismiss after 2 seconds (or earlier via click/key in _unhandled_input).
-	_celebration_tween.tween_interval(2.0)
-	_celebration_tween.tween_callback(_dismiss_celebration)
+	# 4. No auto-dismiss — player must press the button on the card.
 
 
 func _show_celebration_card(bd: Dictionary, placed_on_rack: bool, new_accords: Array[BaseAccord] = []) -> void:
@@ -337,6 +342,18 @@ func _show_celebration_card(bd: Dictionary, placed_on_rack: bool, new_accords: A
 	tier_lbl.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(tier_lbl)
 
+	# Scoring breakdown (compact, muted).
+	var breakdown_lbl := Label.new()
+	breakdown_lbl.text = "Compat: %.1f  ·  Balance: %.0f%%  ·  Pyramid: %s" % [
+		bd["compatibility"],
+		bd["balance"] * 100.0,
+		"+0.5" if bd["pyramid"] > 0.0 else "—",
+	]
+	breakdown_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	breakdown_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+	breakdown_lbl.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(breakdown_lbl)
+
 	# Separator.
 	var sep := HSeparator.new()
 	vbox.add_child(sep)
@@ -365,6 +382,14 @@ func _show_celebration_card(bd: Dictionary, placed_on_rack: bool, new_accords: A
 		accord_lbl.add_theme_font_size_override("font_size", 15)
 		accord_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(accord_lbl)
+
+	# Dismiss button.
+	var dismiss_btn := Button.new()
+	dismiss_btn.text = "OK"
+	dismiss_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	UITheme.style_commit_button(dismiss_btn)
+	dismiss_btn.pressed.connect(_dismiss_celebration)
+	vbox.add_child(dismiss_btn)
 
 	# -- Position centered over the Panel --
 	_celebration_card.set_anchors_preset(Control.PRESET_CENTER)
@@ -415,19 +440,27 @@ func _reset_after_celebration() -> void:
 	_update_ui_state()
 
 
-func _clear_breakdown() -> void:
-	%QualityLabel.text = ""
-	%TierLabel.text = ""
-	%CompatLabel.text = ""
-	%BalanceLabel.text = ""
-	%PyramidLabel.text = ""
-	%BottledLabel.hide()
-	%DescriptionLabel.text = ""
-	%BalanceBar.value = 0.0
-	%BalanceHint.text = ""
-	%TopNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
-	%MidNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
-	%BaseNote.add_theme_color_override("font_color", UITheme.NOTE_DIM)
+# ---------------------------------------------------------------------------
+# Note pyramid legend styling
+# ---------------------------------------------------------------------------
+
+func _style_pyramid_legend() -> void:
+	# Style the note labels (Top / Heart / Base) with larger font.
+	for note_ref in [%TopNote, %HeartNote, %BaseNote]:
+		note_ref.add_theme_font_size_override("font_size", 13)
+		note_ref.add_theme_color_override("font_color", UITheme.NOTE_DIM)
+		note_ref.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	# Style the legend descriptions with small muted text.
+	var legend_labels := [
+		get_node("Panel/VBoxContainer/HBoxContainer/ResultColumn/PyramidSection/LegendColumn/TopLegend"),
+		get_node("Panel/VBoxContainer/HBoxContainer/ResultColumn/PyramidSection/LegendColumn/HeartLegend"),
+		get_node("Panel/VBoxContainer/HBoxContainer/ResultColumn/PyramidSection/LegendColumn/BaseLegend"),
+	]
+	for lbl in legend_labels:
+		if lbl:
+			lbl.add_theme_font_size_override("font_size", 11)
+			lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
 
 
 # ---------------------------------------------------------------------------

@@ -10,11 +10,17 @@ func _ready() -> void:
 	# Ensures this Area2D doesn't block player movement
 	collision_mask = 0
 
+var _collected := false
+
 func collect() -> void:
-	if ingredient == null:
+	print("Interactable.collect() called on ", name, " _collected=", _collected, " ingredient=", ingredient)
+	if ingredient == null or _collected:
+		print("Interactable.collect() early return - null or already collected")
 		return
+	_collected = true
 
 	# Add to inventory and emit signal
+	print("Interactable: Adding to inventory: ", ingredient.display_name)
 	InventoryManager.add_ingredient(ingredient)
 	ingredient_gathered.emit(ingredient)
 
@@ -22,9 +28,11 @@ func collect() -> void:
 	_show_collect_popup()
 
 	# Shrink bush and remove it
+	print("Interactable: Starting shrink tween")
 	var tween = get_tree().create_tween()
 	tween.tween_property(self, "scale", Vector2.ZERO, 0.8)
 	await tween.finished
+	print("Interactable: Tween finished, queue_free")
 	queue_free()
 
 func _show_collect_popup() -> void:
