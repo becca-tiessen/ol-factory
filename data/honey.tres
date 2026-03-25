@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/oils/honey_oil.tres" id="2_oil"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Raw Honeycomb"
+description = "A waxy golden comb, still humming with warmth from the hive."
+liquid_color = Color(0.85, 0.68, 0.20, 1)
+scent_profile = Vector3(0.4, 0.8, 0.6)
+scent_family = "sweet"
+intensity = 6.0
+note_position = "middle"
+result_item = ExtResource("2_oil")
+metadata/_custom_type_script = "uid://byhsqudpoueih"

@@ -18,32 +18,112 @@ func remove_ingredient(ingredient: BaseIngredient) -> void:
 	_current_mixture.erase(ingredient)
 	_emit_mixture_updated()
 
-## Removes the most recently added manual drop (not accord-expanded ones).
-## Returns true if a drop was removed, false if nothing to undo.
+## Removes the most recently added drop or accord.
+## If the last thing added was an accord, removes that accord and returns its ingredients.
+## If the last thing added was a manual drop, removes that drop.
+## Returns true if something was removed, false if nothing to undo.
 func undo_last_drop() -> bool:
+	if _current_mixture.is_empty():
+		return false
+
 	# Build set of indices that belong to accord expansions.
 	var accord_indices: Dictionary = {}
 	for r in _accord_ranges:
 		for i in range(r["start"], r["start"] + r["count"]):
 			accord_indices[i] = true
 
-	# Walk backwards to find the last manual drop.
-	for i in range(_current_mixture.size() - 1, -1, -1):
-		if not accord_indices.has(i):
-			_current_mixture.remove_at(i)
-			# Adjust accord ranges that come after the removed index.
-			for r in _accord_ranges:
-				if r["start"] > i:
-					r["start"] -= 1
-			_emit_mixture_updated()
-			return true
-	return false
+	# Check if the last element in the mixture belongs to an accord.
+	var last_index := _current_mixture.size() - 1
+	if accord_indices.has(last_index):
+		# Remove the last accord (undo the whole accord, not individual components).
+		return _undo_last_accord()
+
+	# Otherwise, remove the last manual drop.
+	_current_mixture.remove_at(last_index)
+	# Adjust accord ranges that come after the removed index.
+	for r in _accord_ranges:
+		if r["start"] > last_index:
+			r["start"] -= 1
+	_emit_mixture_updated()
+	return true
 
 
-func add_accord(accord: BaseAccord) -> void:
+## Removes the most recently added accord and returns its ingredients to inventory.
+func _undo_last_accord() -> bool:
+	if _accord_ranges.is_empty():
+		return false
+
+	var last_range: Dictionary = _accord_ranges[-1]
+	var accord: BaseAccord = last_range["accord"]
+	var start: int = last_range["start"]
+	var count: int = last_range["count"]
+
+	# Remove the expanded ingredients from the mixture (in reverse to preserve indices).
+	for i in range(start + count - 1, start - 1, -1):
+		_current_mixture.remove_at(i)
+
+	# Remove the accord from tracking.
+	_accord_ranges.pop_back()
+	# Remove the last occurrence of this accord from _current_accords.
+	for i in range(_current_accords.size() - 1, -1, -1):
+		if _current_accords[i] == accord:
+			_current_accords.remove_at(i)
+			break
+
+	# Return ingredients to inventory.
+	var components := AccordManager.get_recipe_ingredients(accord)
+	for entry in components:
+		var ing: BaseIngredient = entry["ingredient"]
+		var amt: int = int(entry["amount"])
+		InventoryManager.add_ingredient(ing, amt)
+
+	_emit_mixture_updated()
+	return true
+
+
+## Checks whether the player has enough ingredients to use this accord once.
+func can_use_accord(accord: BaseAccord) -> bool:
+	var components := AccordManager.get_recipe_ingredients(accord)
+	for entry in components:
+		var ing: BaseIngredient = entry["ingredient"]
+		var amt: int = int(entry["amount"])
+		if InventoryManager.get_count(ing) < amt:
+			return false
+	return true
+
+
+## Returns how many times the player could use this accord based on current inventory.
+func get_accord_uses_available(accord: BaseAccord) -> int:
+	var components := AccordManager.get_recipe_ingredients(accord)
+	var min_uses := 999
+	for entry in components:
+		var ing: BaseIngredient = entry["ingredient"]
+		var amt: int = int(entry["amount"])
+		var owned: int = InventoryManager.get_count(ing)
+		if amt <= 0:
+			continue
+		min_uses = mini(min_uses, owned / amt)
+	if min_uses == 999:
+		return 0
+	return min_uses
+
+
+## Adds an accord to the blend, consuming its component ingredients from inventory.
+## Returns false if the player doesn't have enough ingredients.
+func add_accord(accord: BaseAccord) -> bool:
+	# Check availability first.
+	if not can_use_accord(accord):
+		return false
+
+	# Consume ingredients from inventory.
+	var components := AccordManager.get_recipe_ingredients(accord)
+	for entry in components:
+		var ing: BaseIngredient = entry["ingredient"]
+		var amt: int = int(entry["amount"])
+		InventoryManager.remove_ingredient(ing, amt)
+
 	_current_accords.append(accord)
 	# Expand accord's recipe into component ingredients for scoring.
-	var components := AccordManager.get_recipe_ingredients(accord)
 	var start_index := _current_mixture.size()
 	var count := 0
 	for entry in components:
@@ -54,13 +134,34 @@ func add_accord(accord: BaseAccord) -> void:
 			count += 1
 	_accord_ranges.append({ "accord": accord, "start": start_index, "count": count })
 	_emit_mixture_updated()
+	return true
 
 
 func get_current_accords() -> Array[BaseAccord]:
 	return _current_accords
 
 
+## Clears the entire blend, returning all accord ingredients to inventory.
+## Use reset_beaker_no_refund() after commit to avoid returning already-consumed ingredients.
 func reset_beaker() -> void:
+	# Return accord ingredients to inventory.
+	for r in _accord_ranges:
+		var accord: BaseAccord = r["accord"]
+		var components := AccordManager.get_recipe_ingredients(accord)
+		for entry in components:
+			var ing: BaseIngredient = entry["ingredient"]
+			var amt: int = int(entry["amount"])
+			InventoryManager.add_ingredient(ing, amt)
+
+	_current_mixture.clear()
+	_current_accords.clear()
+	_accord_ranges.clear()
+	_emit_mixture_updated()
+
+
+## Clears the beaker state without returning any ingredients.
+## Used after a blend is committed (ingredients are permanently consumed).
+func reset_beaker_no_refund() -> void:
 	_current_mixture.clear()
 	_current_accords.clear()
 	_accord_ranges.clear()
@@ -168,13 +269,13 @@ func get_accord_summary() -> Array:
 # Each entry: { "ingredient": BaseIngredient, "amount": float }
 func calculate_quality_breakdown(blend: Array) -> Dictionary:
 	if blend.is_empty():
-		return { "quality": 0.0, "tier": "Poor", "compatibility": 0.0, "balance": 1.0, "pyramid": 0.0 }
+		return { "quality": 0.0, "tier": "Poor", "compatibility": 0.0, "balance": 1.0, "focus": 1.0, "depth": 1.0, "pyramid": 0.0 }
 
 	if blend.size() == 1:
 		# A single ingredient can't make a great perfume — cap at Decent range.
 		var raw: float = (blend[0]["ingredient"] as BaseIngredient).intensity
 		var score: float = clampf(raw * 0.5, 0.0, 5.0)
-		return { "quality": score, "tier": _get_tier(score), "compatibility": raw, "balance": 1.0, "pyramid": 0.0 }
+		return { "quality": score, "tier": _get_tier(score), "compatibility": raw, "balance": 1.0, "focus": 1.0, "depth": 1.0, "pyramid": 0.0 }
 
 	# --- 1. Compatibility score ---
 	var pair_count := 0
@@ -203,20 +304,56 @@ func calculate_quality_breakdown(blend: Array) -> Dictionary:
 	if max_fraction > 0.5:
 		balance_modifier = clamp(1.0 - (max_fraction - 0.5) * 1.4, 0.3, 1.0)
 
-	# --- 3. Pyramid bonus ---
+	# --- 3. Focus penalty (too many distinct scent families) ---
+	var distinct_families: Dictionary = {}
+	for entry in blend:
+		distinct_families[(entry["ingredient"] as BaseIngredient).scent_family] = true
+	var family_count := distinct_families.size()
+	var focus_modifier := 1.0
+	if family_count == 4:
+		focus_modifier = 0.85
+	elif family_count == 5:
+		focus_modifier = 0.7
+	elif family_count >= 6:
+		focus_modifier = 0.55
+
+	# --- 4. Depth modifier (minimum drop requirement for top tiers) ---
+	var total_drops := 0
+	for entry in blend:
+		total_drops += int(entry["amount"])
+	var depth_modifier := 1.0
+	if total_drops <= 2:
+		depth_modifier = 0.6
+	elif total_drops <= 3:
+		depth_modifier = 0.8
+	elif total_drops <= 5:
+		depth_modifier = 0.95
+
+	# --- 5. Pyramid bonus (scales with base quality) ---
 	var note_positions: Dictionary = {}
 	for entry in blend:
 		note_positions[(entry["ingredient"] as BaseIngredient).note_position] = true
-	var pyramid_bonus := 0.5 if (note_positions.has("top") and note_positions.has("middle") and note_positions.has("base")) else 0.0
+	var has_full_pyramid := note_positions.has("top") and note_positions.has("middle") and note_positions.has("base")
+	var base_quality: float = clampf(compatibility_score * balance_modifier * focus_modifier * depth_modifier, 0.0, 10.0)
+	var pyramid_bonus := 0.0
+	if has_full_pyramid:
+		if base_quality >= 6.0:
+			pyramid_bonus = 0.75
+		elif base_quality >= 4.0:
+			pyramid_bonus = 0.5
+		else:
+			pyramid_bonus = 0.25
 
-	# --- 4. Final score ---
-	var quality: float = clampf(compatibility_score * balance_modifier + pyramid_bonus, 0.0, 10.0)
+	# --- 6. Final score ---
+	var quality: float = clampf(base_quality + pyramid_bonus, 0.0, 10.0)
 
 	return {
 		"quality": quality,
 		"tier": _get_tier(quality),
 		"compatibility": compatibility_score,
 		"balance": balance_modifier,
+		"focus": focus_modifier,
+		"depth": depth_modifier,
 		"pyramid": pyramid_bonus,
 	}
 
@@ -263,13 +400,20 @@ static func generate_hints(blend: Array, breakdown: Dictionary) -> String:
 
 	# --- Identify problems for weaker blends (most relevant first) ---
 	var hints: Array[String] = []
+	var focus: float = breakdown.get("focus", 1.0)
+	var depth: float = breakdown.get("depth", 1.0)
 
 	# 1. Only one unique ingredient — not really a blend.
 	if blend.size() == 1:
 		hints.append("A single ingredient isn't much of a blend. Try mixing in something different to add complexity.")
 		return " ".join(hints)
 
-	# 2. Too few drops.
+	# 2. Too many scent families — unfocused blend.
+	if focus < 1.0:
+		hints.append("This blend has too many competing scent families. A focused perfume works with two or three.")
+		return " ".join(hints)
+
+	# 3. Too few drops.
 	var total_drops := 0
 	for entry in blend:
 		total_drops += int(entry["amount"])
@@ -277,7 +421,7 @@ static func generate_hints(blend: Array, breakdown: Dictionary) -> String:
 		hints.append("This blend is too thin. Add more drops to develop the scent.")
 		return " ".join(hints)
 
-	# 2. One ingredient dominates.
+	# 4. One ingredient dominates.
 	if balance < 1.0:
 		# Find the dominant ingredient.
 		var max_weighted := 0.0
@@ -293,7 +437,7 @@ static func generate_hints(blend: Array, breakdown: Dictionary) -> String:
 		if total_weighted > 0.0 and max_weighted / total_weighted > 0.5:
 			hints.append("This blend is overpowered by %s. Try balancing it with other scents." % dominant_name)
 
-	# 3. Clashing scent families (low compatibility).
+	# 5. Clashing scent families (low compatibility).
 	if compatibility < 5.0 and blend.size() >= 2:
 		# Find the worst-pairing pair.
 		var worst_score := 999.0
@@ -314,7 +458,7 @@ static func generate_hints(blend: Array, breakdown: Dictionary) -> String:
 		elif hints.is_empty():
 			hints.append("These scent families aren't harmonizing well. Try ingredients that complement each other.")
 
-	# 4. Missing note layers.
+	# 6. Missing note layers.
 	if pyramid == 0.0:
 		var note_positions: Dictionary = {}
 		for entry in blend:
@@ -359,6 +503,8 @@ const FAMILY_COLORS: Dictionary = {
 	"sweet":  Color(0.85, 0.55, 0.75),   # soft mauve
 	"green":  Color(0.40, 0.75, 0.35),   # green
 	"spicy":  Color(0.80, 0.30, 0.20),   # red-orange
+	"fresh":  Color(0.659, 0.847, 0.91), # pale blue — sea salt / ocean
+	"amber":  Color(0.80, 0.70, 0.45),   # warm gold — ambergris
 }
 
 const DEFAULT_FAMILY_COLOR := Color(0.6, 0.6, 0.6)

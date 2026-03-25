@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=4 format=3 uid="uid://dutfkqdfww311"]
+
+[ext_resource type="Texture2D" uid="uid://dvm84jtgdh2yw" path="res://assets/PNG/cinnamon-stick.png" id="1_gn0fl"]
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_vycbs"]
+[ext_resource type="Resource" path="res://data/oils/cinnamon_oil.tres" id="3_oil"]
+
+[resource]
+script = ExtResource("1_vycbs")
+display_name = "Raw Cinnamon"
+icon = ExtResource("1_gn0fl")
+description = "Curled bark with a warm, spicy bite."
+liquid_color = Color(0.5882353, 0.33333334, 0, 1)
+scent_family = "spicy"
+intensity = 7.0
+result_item = ExtResource("3_oil")
+metadata/_custom_type_script = "uid://byhsqudpoueih"

@@ -14,6 +14,8 @@ func _ready() -> void:
 func open() -> void:
 	_refresh_all()
 	super()
+	if not CellarManager.seen_rack_tutorial:
+		_show_rack_tutorial()
 
 
 func _refresh_all() -> void:
@@ -80,6 +82,16 @@ func _refresh_rack() -> void:
 			tier_lbl.add_theme_color_override("font_color", UITheme.WARM_AMBER)
 			tier_lbl.add_theme_font_size_override("font_size", 12)
 			vbox.add_child(tier_lbl)
+
+			# Description
+			if bottle.description != "":
+				var desc_lbl := Label.new()
+				desc_lbl.text = bottle.description
+				desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				desc_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+				desc_lbl.add_theme_font_size_override("font_size", 11)
+				vbox.add_child(desc_lbl)
 
 			# Age progress
 			var age_lbl := Label.new()
@@ -203,6 +215,63 @@ func _refresh_bottles() -> void:
 		hbox.add_child(place_btn)
 
 		%BottleList.add_child(hbox)
+
+
+# ---------------------------------------------------------------------------
+# First-time tutorial
+# ---------------------------------------------------------------------------
+
+var _intro_overlay: PanelContainer = null
+
+
+func _show_rack_tutorial() -> void:
+	if _intro_overlay:
+		return
+
+	var panel = get_node_or_null("Panel")
+	if panel == null:
+		return
+
+	_intro_overlay = PanelContainer.new()
+	_intro_overlay.add_theme_stylebox_override("panel", UITheme.make_panel_bg())
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	_intro_overlay.add_child(vbox)
+
+	var lines: Array[String] = [
+		"Welcome to the aging rack.",
+		"Place your bottled perfumes here and let them rest. As time passes, each bottle slowly develops a richer, deeper character — gaining up to +%.1f bonus quality." % CellarManager.AGE_CAP,
+		"You can retrieve a bottle any time, but patience rewards the perfumer. A well-aged blend can turn a decent perfume into something truly special.",
+	]
+
+	for line in lines:
+		var lbl := Label.new()
+		lbl.text = line
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lbl.add_theme_color_override("font_color", UITheme.TEXT_DARK)
+		vbox.add_child(lbl)
+
+	var btn := Button.new()
+	btn.text = "Let's get aging"
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.pressed.connect(_on_tutorial_dismiss)
+	vbox.add_child(btn)
+
+	panel.add_child(_intro_overlay)
+	_intro_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_intro_overlay.offset_left = 20
+	_intro_overlay.offset_top = 20
+	_intro_overlay.offset_right = -20
+	_intro_overlay.offset_bottom = -20
+
+
+func _on_tutorial_dismiss() -> void:
+	CellarManager.seen_rack_tutorial = true
+	CellarManager._save_data()
+	if _intro_overlay:
+		_intro_overlay.queue_free()
+		_intro_overlay = null
 
 
 # ---------------------------------------------------------------------------

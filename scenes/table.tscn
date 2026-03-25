@@ -19,7 +19,7 @@ shape = SubResource("RectangleShape2D_eotx8")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_02ppr")
 region_enabled = true
-region_rect = Rect2(116, 176, 41, 36)
+region_rect = Rect2(80, 32, 32, 48)
 
 [node name="InteractionArea" type="Area2D" parent="."]
 collision_layer = 0

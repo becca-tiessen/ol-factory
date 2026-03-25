@@ -1,0 +1,200 @@
+{
+	"charlotte": {
+		"intro": [
+			"Oh, hello! You must be the one who took over the old château. I'm Charlotte — I live just down the lane.",
+			"That place has such a history... something about bringing it back to life makes my heart flutter.",
+			"If you ever make perfumes, do come find me. I'm an absolute sucker for anything floral."
+		],
+		"request_hint": "I pinned a little note on your board at the château — I've been craving a certain kind of scent lately. No rush, of course.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Oh... oh, this is just beautiful. You really understood what I was looking for. Thank you, truly.",
+		"delivery_fail": "It's lovely, but... it's not quite what I had in mind. Maybe try something a little different?",
+		"idle": [
+			"The gardens here are so beautiful this time of year. I could sit among them for hours.",
+			"Do you ever stop and just smell the roses? Literally, I mean. They're so wonderful.",
+			"I've been pressing flowers lately — there's something about preserving beauty that speaks to me.",
+			"Have you met Rémy? He's always wandering off somewhere. Very outdoorsy type."
+		]
+	},
+	"remy": {
+		"intro": [
+			"Oh! Didn't hear you coming. I'm Rémy — I spend most of my time out here, if I'm honest.",
+			"The old château in good hands again, eh? The village has been hoping for that.",
+			"If you're making perfumes, I'd love to try something earthy. Clean air, wet leaves... that sort of thing."
+		],
+		"request_hint": "I left a note on your board — something about a scent I've been thinking about on my morning walks.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Ha — yes! That's exactly it. Like stepping outside after rain. You've got a good nose.",
+		"delivery_fail": "Hmm... it doesn't quite smell like the outdoors to me. Maybe something greener?",
+		"idle": [
+			"There's a path along the ridge that smells incredible at dawn. Something green and sharp.",
+			"I was up before sunrise this morning. The dew on the grass has its own scent, you know.",
+			"The forest gets interesting in spring — things grow that don't grow anywhere else around here.",
+			"You ever notice how rain smells different depending on the season? I think about that a lot."
+		]
+	},
+	"genevieve": {
+		"intro": [
+			"Ah, a new face. I am Geneviève. I have lived in this village my entire life.",
+			"The old château has been empty too long. It is good to see life in it again.",
+			"My grandmother used to say that a good perfume is like a memory you can hold. I believe that."
+		],
+		"request_hint": "I left a request on your board. It is something that reminds me of home — of the old days.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Mon dieu... this takes me back. You have done something very right here. Merci.",
+		"delivery_fail": "It is not quite what I remembered. The scent I am thinking of is warmer, deeper.",
+		"idle": [
+			"Cedar and sandalwood... those are honest scents. They don't pretend to be anything they're not.",
+			"My grandmother had a small cedar chest. Even now, that smell makes me feel safe.",
+			"There is a craft to perfumery that most people overlook. It takes patience.",
+			"The courtyard here has seen much. I wonder sometimes what the stones remember."
+		]
+	},
+	"noelle": {
+		"intro": [
+			"Oh! Hello hello! I'm Noëlle — I run the little sweet shop on the east side of the village.",
+			"A perfumer! How wonderful. I love perfume almost as much as I love pastries.",
+			"If you ever make something sweet — vanilla, honey, that sort of thing — I would absolutely love to try it."
+		],
+		"request_hint": "I left a little note on your board. Something warm and sweet — like a treat you can wear.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Oh it's WONDERFUL. Sweet and warm and it smells like happiness. I love it!",
+		"delivery_fail": "It's nice but... it doesn't quite have that sweetness I was dreaming of. A little more sweetness maybe?",
+		"idle": [
+			"I made honey cakes this morning. The whole shop smells wonderful right now.",
+			"Have you tried combining vanilla and something floral? I imagine that would be divine.",
+			"Bernard came in for bread again today. He always looks so thoughtful when he's eating.",
+			"Sometimes I close my eyes and try to imagine what warmth smells like. Does that sound strange?"
+		]
+	},
+	"margot": {
+		"intro": [
+			"Yes? Oh, hello. You're the one at the old château, aren't you.",
+			"I'll be honest — I've had perfumes made for me before and most of them were... disappointing.",
+			"If you can make something truly exceptional — not just pleasant, exceptional — then perhaps we can talk."
+		],
+		"request_hint": "I've posted a request on your board. I know exactly what I want, so please read it carefully.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "...I'll admit, this is actually quite good. Better than I expected. Well done.",
+		"delivery_fail": "No, that's not right at all. You need to pay closer attention to what I asked for.",
+		"idle": [
+			"Most perfumes are far too heavy-handed. Subtlety is a skill very few people have.",
+			"Floral doesn't mean sentimental. It can be sharp, precise, elegant. Remember that.",
+			"I spent three years in the city before coming back here. The perfumes there were dreadful.",
+			"I noticed you've been working hard at the château. I respect effort, at least."
+		]
+	},
+	"pierre": {
+		"intro": [
+			"Ah, the new perfumer! Pierre — I'm the one who keeps the mill running. Practical sort, me.",
+			"Don't let the simple appearance fool you. I appreciate a well-made thing as much as anyone.",
+			"Citrus, something clean and sharp — that's what I'd like. Nothing too fussy."
+		],
+		"request_hint": "I put a request on your board. Simple requirements — just read it over when you get a chance.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Now that's a proper scent. Clean, purposeful. Exactly what I needed. Good work.",
+		"delivery_fail": "Hmm. Not quite. Something's off — not crisp enough, I think.",
+		"idle": [
+			"Bergamot and lemon — that's what mornings should smell like. Gets you going.",
+			"I fixed the north gate last week. Nobody noticed, but that's the work, isn't it.",
+			"A perfume that lingers too long is like a guest who overstays. Balance matters.",
+			"Citrus fades fast, but that's all right. Some things are better bright and brief."
+		]
+	},
+	"simone": {
+		"intro": [
+			"Oh, a perfumer! I've been waiting for someone like you to arrive in this little village.",
+			"I'm Simone — you may have heard of my performances at the festival? No? You will.",
+			"I want something extraordinary. Something that announces itself before I even enter a room."
+		],
+		"request_hint": "I left a note on your board. What I'm looking for is... an experience. Don't hold back.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Oh... OH. This is magnificent. The whole room will know I've arrived. Perfect.",
+		"delivery_fail": "Darling, this is sweet, but it doesn't have the drama I need. More presence, please.",
+		"idle": [
+			"A perfume is a performance. It needs an entrance, a middle, and a finale.",
+			"I've been working on something new for the festival. A whole new character.",
+			"Sweet and unexpected — that's the combination nobody expects. Until they smell it.",
+			"The château suits a perfumer. There's something theatrical about the whole enterprise."
+		]
+	},
+	"celine": {
+		"intro": [
+			"Oh! Sorry, I didn't see you there. I was just... looking at this.",
+			"I'm Céline. I work at the recycling plant down the road. It's not glamorous but... well, you'd be surprised what people throw away.",
+			"You're the one fixing up the old château, right? That's brave. Good luck with it."
+		],
+		"stage1": [
+			"I heard you've been making perfumes up at the château. That's really cool.",
+			"I... make things too, actually. At home. After work. It's nothing, really.",
+			"Glass. I blow glass. From stuff at the plant that would just get melted down anyway. Bottles, mostly.",
+			"They're not very good. I mean, I've never shown anyone."
+		],
+		"stage2_prompt": [
+			"Is that one of your perfumes? Can I... could I see it?",
+			"She holds the bottle up to the light.",
+			"This is really lovely. You made this yourself?",
+			"...You know, I have this bottle at home. One I made that actually came out right. I've never shown it to anyone.",
+			"Would you... would you want to see it? Next time you visit?"
+		],
+		"stage3": [
+			"She's holding a small glass bottle. It catches the light beautifully.",
+			"I brought it. Like I said I would. It's probably not that great, but...",
+			"Here. What do you think?",
+			"Céline... this is gorgeous. You made this from recycled glass?",
+			"...Really? You're not just saying that?",
+			"I have more at home. Different shapes. I just... never thought anyone would want them.",
+			"Maybe... no. Never mind."
+		],
+		"stage4": [
+			"You've been doing really well with the perfumery. People in town are talking about it.",
+			"It made me think... you know the courtyard at the château? The one that's all empty?",
+			"What if I... set up a little table there? Just to see if anyone likes my bottles?",
+			"I'd need a couple of days to get ready. But if you think it's a good idea...",
+			"I think it's a great idea.",
+			"She smiles — really smiles, for the first time.",
+			"Okay. Okay! I'll do it. Give me a little time."
+		],
+		"stage5_present": [
+			"I can't believe I'm actually doing this. Look — I set everything up this morning.",
+			"I have a few bottle designs if you want to take a look. For your perfumes.",
+			"Thank you. For... you know. Believing in me."
+		],
+		"stage5_absent_idle": [
+			"The light hits the old bottles in the recycling bins sometimes and it's just... sorry, that's weird.",
+			"I like walking up here. It's quiet.",
+			"Do you ever make anything? I mean, with your hands. There's something satisfying about it."
+		],
+		"idle": [
+			"The light hits the old bottles in the recycling bins sometimes and it's just... sorry, that's weird.",
+			"I like walking up here. It's quiet.",
+			"Do you ever make anything? I mean, with your hands. There's something satisfying about it."
+		],
+		"stage1_idle": [
+			"I tried making a new bottle shape last night. It cracked. They always crack.",
+			"Do you ever worry that the things you make aren't good enough for other people to see?",
+			"The recycling plant is fine. It's steady work. Glass blowing is just... a hobby."
+		],
+		"request_hint": "",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Oh — this is beautiful. Thank you.",
+		"delivery_fail": "It's lovely, but I think there's something not quite right yet."
+	},
+	"bernard": {
+		"intro": [
+			"Well hello there. Bernard — I'm the one who tends the old orchard on the hill.",
+			"Good to have the château in use again. These old buildings need people in them.",
+			"I like warm things. Cedar, smoke, something that feels like an evening by the fire."
+		],
+		"request_hint": "I left you a note on the board. Nothing fancy — just something warm and honest.",
+		"delivery_prompt": "Would you like to give {perfume_name} to {npc_name}?",
+		"delivery_success": "Ah... yes. That's it exactly. Warm and deep and real. You've done well.",
+		"delivery_fail": "It's decent, but it's missing that warmth I was after. Something more grounding, I think.",
+		"idle": [
+			"The orchard smells different in every season. Right now it's all warm wood and dry leaves.",
+			"I was up fixing the fence line yesterday. Hard work, but satisfying.",
+			"Sandalwood reminds me of my father. He always smelled of the workshop.",
+			"The courtyard has good bones. You'll make something of it, I think."
+		]
+	}
+}

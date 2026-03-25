@@ -241,26 +241,6 @@ func _get_uncompleted_for_tier(tier: int) -> Array[BaseRequest]:
 	return pool
 
 
-func get_requirements_text(request: BaseRequest) -> String:
-	var parts: Array[String] = []
-	if request.min_drops > 0:
-		parts.append("%d+ drops" % request.min_drops)
-	for family: String in request.required_families:
-		parts.append("%d+ %s" % [request.required_families[family], family])
-	for note: String in request.required_notes:
-		var display_note := "heart" if note == "middle" else note
-		parts.append("%d+ %s note" % [request.required_notes[note], display_note])
-	if request.min_quality > 0.0:
-		parts.append("quality %.0f+" % request.min_quality)
-	if request.requires_accord:
-		parts.append("uses a discovered accord")
-	if request.requires_aged:
-		parts.append("properly aged")
-	if parts.is_empty():
-		return "No special requirements."
-	return "Requires: " + ", ".join(parts)
-
-
 # ---------------------------------------------------------------------------
 # Save / Load
 # ---------------------------------------------------------------------------

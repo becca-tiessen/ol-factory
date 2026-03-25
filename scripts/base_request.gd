@@ -12,6 +12,7 @@ class_name BaseRequest
 @export var required_notes: Dictionary = {}     # e.g. { "base": 1 } = at least 1 base-note ingredient
 @export var min_quality: float = 0.0
 @export var min_drops: int = 0
+@export var min_distinct_ingredients: int = 0
 @export var requires_accord: bool = false
 @export var requires_aged: bool = false
 
@@ -37,6 +38,7 @@ static func from_dict(data: Dictionary) -> BaseRequest:
 	req.required_notes = data.get("required_notes", {})
 	req.min_quality = float(data.get("min_quality", 0.0))
 	req.min_drops = int(data.get("min_drops", 0))
+	req.min_distinct_ingredients = int(data.get("min_distinct_ingredients", 0))
 	req.requires_accord = bool(data.get("requires_accord", false))
 	req.requires_aged = bool(data.get("requires_aged", false))
 	req.reward_text = data.get("reward_text", "")

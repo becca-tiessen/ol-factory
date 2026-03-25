@@ -103,6 +103,14 @@ func _build_sell_tab() -> void:
 		quality_lbl.add_theme_color_override("font_color", UITheme.SOFT_BLUE)
 		info.add_child(quality_lbl)
 
+		if bottle.description != "":
+			var desc_lbl := Label.new()
+			desc_lbl.text = bottle.description
+			desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			desc_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+			desc_lbl.add_theme_font_size_override("font_size", 11)
+			info.add_child(desc_lbl)
+
 		if bottle.aged:
 			var aged_lbl := Label.new()
 			aged_lbl.text = "(aged +%.2f)" % bottle.age_bonus

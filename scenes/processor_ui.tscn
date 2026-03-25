@@ -34,7 +34,7 @@ grow_vertical = 2
 
 [node name="Title" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
-text = "-- Marguerite's Processing --"
+text = "-- Margot's Processing --"
 horizontal_alignment = 1
 
 [node name="CoinLabel" type="Label" parent="Panel/VBoxContainer"]

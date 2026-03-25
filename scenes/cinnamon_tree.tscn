@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3 uid="uid://tvqnyixytfbk"]
+
+[ext_resource type="Script" uid="uid://b8nteve27n138" path="res://scripts/interactable.gd" id="1_hobnl"]
+[ext_resource type="Resource" uid="uid://dutfkqdfww311" path="res://data/cinnamon.tres" id="2_12q5h"]
+[ext_resource type="Texture2D" uid="uid://b050kjf8lg7bi" path="res://assets/PNG/exterior.png" id="3_qpvvt"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_v5joh"]
+
+[node name="CinnamonTree" type="Area2D"]
+script = ExtResource("1_hobnl")
+ingredient = ExtResource("2_12q5h")
+metadata/_custom_type_script = "uid://b8nteve27n138"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_v5joh")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("3_qpvvt")
+region_enabled = true
+region_rect = Rect2(96, 728, 48, 32)

@@ -1,6 +1,6 @@
 extends BaseInteractableUI
 
-## Marguerite's processing UI.
+## Margot's processing UI.
 ## First visit: intro dialogue + starter oil gift.
 ## Subsequent visits: two-column submit/collect interface.
 
@@ -50,10 +50,9 @@ func _show_intro() -> void:
 	_intro_overlay.add_child(vbox)
 
 	var lines: Array[String] = [
-		"Bonjour! I am Marguerite, a travelling distiller.",
-		"I help local artisans turn their raw ingredients into usable oils.",
-		"Here — take these to get you started at the bench.",
-		"Bring me your raw materials any time. Small fee for my trouble.",
+		"Oh! You must be the new owner. Welcome to Bellefleur — we've been wondering when someone would take on the old château.",
+		"I'm Margot. I process materials for the local artisans — oils, essences, that sort of thing. If you're planning to revive the perfumery, you'll need my help.",
+		"Here — take these to get started. Consider them a welcome gift.",
 	]
 
 	for line in lines:
@@ -63,12 +62,42 @@ func _show_intro() -> void:
 		lbl.add_theme_color_override("font_color", UITheme.TEXT_DARK)
 		vbox.add_child(lbl)
 
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 8)
-	vbox.add_child(spacer)
+	# Show each starter oil with a vial icon and name.
+	var oils_grid := GridContainer.new()
+	oils_grid.columns = 2
+	oils_grid.add_theme_constant_override("h_separation", 12)
+	oils_grid.add_theme_constant_override("v_separation", 6)
+	vbox.add_child(oils_grid)
+
+	for oil_path in STARTER_OIL_PATHS:
+		var oil := load(oil_path) as BaseIngredient
+		if oil == null:
+			continue
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+
+		var vial := BeakerDisplay.new()
+		vial.custom_minimum_size = Vector2(24, 32)
+		vial.liquid_color = oil.liquid_color
+		vial.fill_ratio = 0.7
+		row.add_child(vial)
+
+		var name_lbl := Label.new()
+		name_lbl.text = oil.display_name
+		name_lbl.add_theme_color_override("font_color", UITheme.TEXT_DARK)
+		name_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(name_lbl)
+
+		oils_grid.add_child(row)
+
+	var closing_lbl := Label.new()
+	closing_lbl.text = "When you gather raw ingredients from around the area, bring them to me. I'll process them into oils you can use at the bench. Small fee for my time — I'm sure you understand. Good luck in there. The old perfumer left quite a legacy."
+	closing_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	closing_lbl.add_theme_color_override("font_color", UITheme.TEXT_DARK)
+	vbox.add_child(closing_lbl)
 
 	var btn := Button.new()
-	btn.text = "Continue"
+	btn.text = "Accept starter oils"
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn.pressed.connect(_on_intro_continue)
 	vbox.add_child(btn)
@@ -142,12 +171,21 @@ func _build_raw_list() -> void:
 		hbox.add_theme_constant_override("separation", 8)
 		card.add_child(hbox)
 
-		# Color dot.
-		var dot := ColorRect.new()
-		dot.custom_minimum_size = Vector2(12, 12)
-		dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		dot.color = ing.liquid_color
-		hbox.add_child(dot)
+		# Icon if available, otherwise colored dot.
+		if ing.icon:
+			var tex_rect := TextureRect.new()
+			tex_rect.texture = ing.icon
+			tex_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+			tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			tex_rect.custom_minimum_size = Vector2(20, 20)
+			tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			hbox.add_child(tex_rect)
+		else:
+			var dot := ColorRect.new()
+			dot.custom_minimum_size = Vector2(12, 12)
+			dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			dot.color = ing.liquid_color
+			hbox.add_child(dot)
 
 		# Info.
 		var info := VBoxContainer.new()
@@ -176,8 +214,8 @@ func _build_raw_list() -> void:
 
 		%RawList.add_child(card)
 
-	# Show in-progress queue items.
-	var queue := ProcessingManager.get_queue()
+	# Show in-progress queue items (Margot's only, not workshop).
+	var queue := ProcessingManager.get_queue_filtered(false)
 	if not queue.is_empty():
 		var sep := HSeparator.new()
 		%RawList.add_child(sep)
@@ -212,7 +250,7 @@ func _build_ready_list() -> void:
 	for child in %ReadyList.get_children():
 		child.queue_free()
 
-	var ready := ProcessingManager.get_ready_oils()
+	var ready := ProcessingManager.get_ready_oils_filtered(false)
 	%CollectAllButton.visible = not ready.is_empty()
 
 	if ready.is_empty():
@@ -264,4 +302,4 @@ func _on_process(raw: BaseIngredient) -> void:
 
 
 func _on_collect_all() -> void:
-	ProcessingManager.collect_all()
+	ProcessingManager.collect_all_filtered(false)

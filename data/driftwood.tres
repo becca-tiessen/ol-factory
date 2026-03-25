@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3 uid="uid://driftwood_ingredient"]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_d4fil"]
+
+[resource]
+script = ExtResource("1_d4fil")
+display_name = "Driftwood"
+description = "Salt-weathered wood worn smooth by waves and time. Lighter than cedar, softer than sandalwood — it smells like patience."
+liquid_color = Color(0.608, 0.557, 0.494, 1)
+density = 1.0
+scent_profile = Vector3(0.1, 0.4, 0.85)
+scent_family = "woody"
+intensity = 4.0
+note_position = "base"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

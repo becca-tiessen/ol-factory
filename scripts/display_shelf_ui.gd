@@ -83,6 +83,17 @@ func _create_display_slot(bottle: BottledPerfume) -> VBoxContainer:
 	tier_lbl.add_theme_font_size_override("font_size", 12)
 	slot.add_child(tier_lbl)
 
+	# Description
+	if bottle.description != "":
+		var desc_lbl := Label.new()
+		desc_lbl.text = bottle.description
+		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+		desc_lbl.add_theme_font_size_override("font_size", 11)
+		desc_lbl.custom_minimum_size.x = 100
+		slot.add_child(desc_lbl)
+
 	# Aged indicator
 	if bottle.aged:
 		var aged_lbl := Label.new()

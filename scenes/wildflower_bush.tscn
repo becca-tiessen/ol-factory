@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://b8nteve27n138" path="res://scripts/interactable.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/wildflower.tres" id="2_ingredient"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_coll"]
+radius = 15.0
+
+[node name="WildflowerBush" type="Area2D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_script")
+ingredient = ExtResource("2_ingredient")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_coll")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -2)
+modulate = Color(0.78, 0.65, 0.88, 1)

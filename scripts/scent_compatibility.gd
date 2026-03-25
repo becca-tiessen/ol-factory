@@ -9,7 +9,7 @@ class_name ScentCompatibility
 # To add more rules, just add a new entry here — no other file changes needed.
 # ---------------------------------------------------------------------------
 
-const DEFAULT_COMPATIBILITY := 0.3
+const DEFAULT_COMPATIBILITY := 0.15
 
 const COMPATIBILITY_TABLE: Dictionary = {
 	# --- High compatibility (~0.85–0.90) ---
@@ -36,6 +36,14 @@ const COMPATIBILITY_TABLE: Dictionary = {
 
 	# --- Low (~0.30–0.35) ---
 	"green+spicy":    0.35,  # usually clashing
+
+	# --- Fresh family (ocean / clean / mineral) ---
+	"citrus+fresh":   0.85,  # bright citrus + sea spray — effervescent
+	"fresh+green":    0.80,  # coastal grass, sea breeze
+	"floral+fresh":   0.60,  # ocean florals, light and airy
+	"fresh+woody":    0.55,  # salt air + driftwood — the beach itself
+	"fresh+spicy":    0.25,  # sharp contrast, usually clashing
+	"fresh+sweet":    0.20,  # mineral clashes with gourmand warmth
 	# Anything not listed falls back to DEFAULT_COMPATIBILITY (0.3)
 }
 

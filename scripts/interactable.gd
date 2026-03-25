@@ -4,7 +4,8 @@ class_name Interactable
 signal ingredient_gathered(ingredient: BaseIngredient)
 
 @export var ingredient: BaseIngredient
-@export var collect_emoji: String = "🌹"
+@export var empty_texture: Texture2D
+@export var ingredient_icon: Texture2D
 
 func _ready() -> void:
 	# Ensures this Area2D doesn't block player movement
@@ -25,24 +26,57 @@ func collect() -> void:
 	_spawn_particle_burst()
 	_shimmer_player()
 
-	# Show floating text above player
-	_show_collect_popup()
+	if empty_texture and ingredient_icon:
+		# New gathering: swap sprite + float ingredient icon
+		_show_collect_popup(global_position + Vector2(-20, -30))
+		_swap_and_float()
+	else:
+		# Fallback: shrink bush and remove it
+		_show_collect_popup()
+		var tween = get_tree().create_tween()
+		tween.tween_property(self, "scale", Vector2.ZERO, 0.8)
+		await tween.finished
+		queue_free()
 
-	# Shrink bush and remove it
+
+func _swap_and_float() -> void:
+	# Swap the bush sprite to the empty version
+	var sprite: Sprite2D = get_node("Sprite2D")
+	sprite.texture = empty_texture
+	sprite.region_enabled = false
+
+	# Spawn floating ingredient icon at the bush position
+	var icon_sprite = Sprite2D.new()
+	icon_sprite.texture = ingredient_icon
+	icon_sprite.global_position = global_position + Vector2(0, -8)
+	icon_sprite.scale = Vector2(2.0, 2.0)
+	icon_sprite.z_index = 10
+	get_tree().root.add_child(icon_sprite)
+
+	# Float upward and fade out
 	var tween = get_tree().create_tween()
-	tween.tween_property(self, "scale", Vector2.ZERO, 0.8)
-	await tween.finished
-	queue_free()
+	tween.set_parallel(true)
+	tween.tween_property(icon_sprite, "position:y", icon_sprite.position.y - 40, 1.2)
+	tween.tween_property(icon_sprite, "modulate:a", 0.0, 1.2)
+	tween.chain().tween_callback(icon_sprite.queue_free)
 
-func _show_collect_popup() -> void:
-	var player = get_tree().current_scene.find_child("Player")
-	if player == null:
-		return
+	# Disable collision so player can't re-interact
+	$CollisionShape2D.set_deferred("disabled", true)
+
+func _show_collect_popup(override_pos: Vector2 = Vector2.INF) -> void:
+	var pos: Vector2
+	if override_pos != Vector2.INF:
+		pos = override_pos
+	else:
+		var player = get_tree().current_scene.find_child("Player")
+		if player == null:
+			return
+		pos = player.global_position + Vector2(-20, -40)
 
 	var label = Label.new()
 	label.text = "+1 %s" % ingredient.display_name
 	label.add_theme_font_size_override("font_size", 16)
-	label.position = player.global_position + Vector2(-20, -40)
+	label.position = pos
 
 	# Add to root so it survives the bush being freed
 	get_tree().root.add_child(label)

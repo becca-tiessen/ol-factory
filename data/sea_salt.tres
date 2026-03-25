@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3 uid="uid://sea_salt_ingredient"]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_d4fil"]
+
+[resource]
+script = ExtResource("1_d4fil")
+display_name = "Sea Salt"
+description = "Dried crystals gathered from tidepools and sun-bleached rocks. Sharp, mineral, impossibly clean."
+liquid_color = Color(0.659, 0.847, 0.91, 1)
+density = 1.0
+scent_profile = Vector3(0.9, 0.3, 0.1)
+scent_family = "fresh"
+intensity = 5.0
+note_position = "top"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

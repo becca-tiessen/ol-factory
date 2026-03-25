@@ -54,12 +54,6 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Dismiss discovery card on mouse click.
-	if _discovery_paused and _discovery_card and is_instance_valid(_discovery_card):
-		if event is InputEventMouseButton and event.pressed:
-			_dismiss_discovery_card()
-			get_viewport().set_input_as_handled()
-			return
 	super(event)
 
 
@@ -68,7 +62,7 @@ func open() -> void:
 	if _committed:
 		_committed = false
 		if mixing_manager:
-			mixing_manager.reset_beaker()
+			mixing_manager.reset_beaker_no_refund()
 		_reset_results()
 	# Clean up any lingering celebration state.
 	if _celebration_card and is_instance_valid(_celebration_card):
@@ -79,6 +73,8 @@ func open() -> void:
 		_celebration_tween = null
 	# Clean up any lingering discovery card.
 	_dismiss_discovery_card_immediate()
+	# Reset note filter tabs to "All" on every open.
+	%GridContainer.reset_filter()
 	# Reset request tab to collapsed on every open.
 	_request_expanded = false
 	if _request_card and is_instance_valid(_request_card):
@@ -86,6 +82,42 @@ func open() -> void:
 	_update_request_tracker()
 	_update_ui_state()
 	super()
+
+	# First-time bench moment — a brief character thought before experimenting.
+	if not GameStartManager.has_seen_bench_intro:
+		GameStartManager.mark_bench_intro_seen()
+		_show_bench_intro()
+
+
+func _show_bench_intro() -> void:
+	var overlay := PanelContainer.new()
+	overlay.add_theme_stylebox_override("panel", UITheme.make_panel_bg())
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	overlay.add_child(vbox)
+
+	var thought := Label.new()
+	thought.text = "It's been a long time since I've been at a bench like this.\nGood thing I have Pepper."
+	thought.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	thought.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+	thought.add_theme_font_size_override("font_size", 15)
+	vbox.add_child(thought)
+
+	var btn := Button.new()
+	btn.text = "Let's get to work"
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.pressed.connect(func(): overlay.queue_free())
+	vbox.add_child(btn)
+
+	var panel := get_node_or_null("Panel")
+	if panel:
+		panel.add_child(overlay)
+		overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		overlay.offset_left = 20
+		overlay.offset_top = 20
+		overlay.offset_right = -20
+		overlay.offset_bottom = -20
 
 
 func _on_mixture_updated(current_mixture: Array[BaseIngredient], _final_color: Color, _final_scent: Vector3) -> void:
@@ -109,7 +141,7 @@ func _on_mixture_updated(current_mixture: Array[BaseIngredient], _final_color: C
 	%GridContainer._refresh()
 	# Enable/disable buttons based on whether beaker has contents.
 	if not _committed and not _discovery_paused:
-		%CommitButton.disabled = current_mixture.is_empty()
+		%CommitButton.disabled = not _can_commit(current_mixture)
 		%UndoButton.disabled = current_mixture.is_empty()
 
 
@@ -159,10 +191,11 @@ func _on_commit_pressed() -> void:
 	if _committed or _discovery_paused or not mixing_manager:
 		return
 	var mixture := mixing_manager.get_current_mixture()
-	if mixture.is_empty():
+	if not _can_commit(mixture):
 		return
 
-	# Consume only manually-added ingredients (not accord-expanded ones).
+	# Consume manually-added ingredients from inventory.
+	# (Accord ingredients were already consumed when the accord was added.)
 	var manual_blend := mixing_manager.get_manual_blend_summary()
 	for entry in manual_blend:
 		InventoryManager.remove_ingredient(entry["ingredient"], int(entry["amount"]))
@@ -179,12 +212,15 @@ func _on_commit_pressed() -> void:
 	# Notify request manager of the blend commit (drives rotation counter).
 	RequestManager.on_blend_committed()
 
+	# Award XP for this blend (quality, novelty, variety bonuses).
+	ProgressionManager.award_crafting_xp(bottle)
+
 	# Lock the blend.
 	_committed = true
 	_update_ui_state()
 
 	# Start the celebration sequence — scoring is revealed inside the card.
-	_start_celebration(bd)
+	_start_celebration(bottle)
 
 
 func _on_undo_pressed() -> void:
@@ -201,11 +237,21 @@ func _on_clear_pressed() -> void:
 	_reset_results()
 
 
+func _can_commit(mixture: Array[BaseIngredient] = []) -> bool:
+	if mixture.is_empty() and mixing_manager:
+		mixture = mixing_manager.get_current_mixture()
+	var distinct: Dictionary = {}
+	for ing in mixture:
+		distinct[ing.display_name] = true
+	return distinct.size() >= 2
+
+
 func _update_ui_state() -> void:
-	var is_empty := mixing_manager == null or mixing_manager.get_current_mixture().is_empty()
-	%CommitButton.disabled = _committed or is_empty
+	var mixture: Array[BaseIngredient] = [] if mixing_manager == null else mixing_manager.get_current_mixture()
+	var is_empty := mixture.is_empty()
+	%CommitButton.disabled = _committed or not _can_commit(mixture)
 	%UndoButton.disabled = _committed or is_empty
-	%ClearButton.disabled = _committed
+	%ClearButton.disabled = _committed or is_empty
 	%GridContainer.committed = _committed
 	%GridContainer._refresh()
 
@@ -498,6 +544,15 @@ func _show_discovery_card(accords: Array[BaseAccord]) -> void:
 		ing_lbl.add_theme_font_size_override("font_size", 13)
 		vbox.add_child(ing_lbl)
 
+	# Dismiss button.
+	var remaining_accords := accords.slice(1)
+	var dismiss_btn := Button.new()
+	dismiss_btn.text = "OK"
+	dismiss_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	UITheme.style_commit_button(dismiss_btn)
+	dismiss_btn.pressed.connect(func(): _dismiss_discovery_card(remaining_accords))
+	vbox.add_child(dismiss_btn)
+
 	# Position centered over the Panel.
 	_discovery_card.set_anchors_preset(Control.PRESET_CENTER)
 	_discovery_card.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -517,14 +572,6 @@ func _show_discovery_card(accords: Array[BaseAccord]) -> void:
 	_discovery_tween = create_tween().set_parallel(true)
 	_discovery_tween.tween_property(_discovery_card, "scale", Vector2.ONE, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	_discovery_tween.tween_property(_discovery_card, "modulate:a", 1.0, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-
-	# Auto-dismiss after 2.5 seconds, or on click/keypress.
-	var remaining_accords := accords.slice(1)
-	_discovery_tween.chain().tween_callback(func():
-		# Wait for 2.5s then dismiss.
-		var timer := get_tree().create_timer(2.5)
-		timer.timeout.connect(func(): _dismiss_discovery_card(remaining_accords))
-	)
 
 
 func _dismiss_discovery_card(remaining_accords: Array[BaseAccord] = []) -> void:
@@ -569,12 +616,8 @@ func _dismiss_discovery_card_immediate() -> void:
 		_discovery_card = null
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
-	# Dismiss discovery card on any key press.
-	if _discovery_paused and _discovery_card and is_instance_valid(_discovery_card):
-		if event is InputEventKey and event.pressed:
-			_dismiss_discovery_card()
-			get_viewport().set_input_as_handled()
+func _unhandled_key_input(_event: InputEvent) -> void:
+	pass
 
 
 
@@ -582,7 +625,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 # Post-commit celebration
 # ---------------------------------------------------------------------------
 
-func _start_celebration(bd: Dictionary) -> void:
+func _start_celebration(bottle: BottledPerfume) -> void:
 	# 1. Clear the blend list and live feedback immediately (scoring section stays visible).
 	for child in %BlendList.get_children():
 		child.queue_free()
@@ -597,12 +640,12 @@ func _start_celebration(bd: Dictionary) -> void:
 	_celebration_tween.tween_property(_bottle, "fill_ratio", 0.0, 0.5).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
 	# 3. Show celebration card after the drain finishes.
-	_celebration_tween.tween_callback(_show_celebration_card.bind(bd))
+	_celebration_tween.tween_callback(_show_celebration_card.bind(bottle))
 
 	# 4. No auto-dismiss — player must press the button on the card.
 
 
-func _show_celebration_card(bd: Dictionary) -> void:
+func _show_celebration_card(bottle: BottledPerfume) -> void:
 	var panel := get_node_or_null("Panel")
 	if panel == null:
 		return
@@ -645,37 +688,39 @@ func _show_celebration_card(bd: Dictionary) -> void:
 
 	# Quality tier line.
 	var tier_lbl := Label.new()
-	tier_lbl.text = "%s — %.1f" % [bd["tier"], bd["quality"]]
+	tier_lbl.text = "%s — %.1f" % [bottle.tier, bottle.base_quality]
 	tier_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tier_lbl.add_theme_color_override("font_color", UITheme.GOLD)
 	tier_lbl.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(tier_lbl)
 
-	# Scoring breakdown (compact, muted).
-	var breakdown_lbl := Label.new()
-	breakdown_lbl.text = "Compat: %.1f  ·  Balance: %.0f%%  ·  Pyramid: %s" % [
-		bd["compatibility"],
-		bd["balance"] * 100.0,
-		"+0.5" if bd["pyramid"] > 0.0 else "—",
-	]
-	breakdown_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	breakdown_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
-	breakdown_lbl.add_theme_font_size_override("font_size", 12)
-	vbox.add_child(breakdown_lbl)
+	# Ingredient summary with color dots.
+	var ing_row := HBoxContainer.new()
+	ing_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	ing_row.add_theme_constant_override("separation", 8)
+	for entry in bottle.blend_summary:
+		var dot := ColorRect.new()
+		dot.custom_minimum_size = Vector2(8, 8)
+		dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		dot.color = BeakerDisplay.color_for_ingredient(entry["name"])
+		ing_row.add_child(dot)
+		var ing_lbl := Label.new()
+		ing_lbl.text = "%s x%d" % [entry["name"], entry["amount"]]
+		ing_lbl.add_theme_font_size_override("font_size", 12)
+		ing_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+		ing_row.add_child(ing_lbl)
+	vbox.add_child(ing_row)
 
-	# Mentor hint — explains why the score is what it is.
-	var blend := mixing_manager.get_blend_summary()
-	var hint_text := MixingManager.generate_hints(blend, bd)
-	if hint_text != "":
-		var hint_lbl := Label.new()
-		hint_lbl.text = hint_text
-		hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		hint_lbl.add_theme_font_size_override("font_size", 12)
-		# Warm color for positive, muted for constructive.
-		var is_positive: bool = bd["tier"] == "Good" or bd["tier"] == "Excellent"
-		hint_lbl.add_theme_color_override("font_color", UITheme.SOFT_GREEN if is_positive else UITheme.WARM_AMBER)
-		vbox.add_child(hint_lbl)
+	# Generated description.
+	if bottle.description != "":
+		var desc_lbl := Label.new()
+		desc_lbl.text = bottle.description
+		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc_lbl.add_theme_font_size_override("font_size", 12)
+		desc_lbl.add_theme_color_override("font_color", UITheme.TEXT_MUTED)
+		desc_lbl.custom_minimum_size.x = 240
+		vbox.add_child(desc_lbl)
 
 	# Separator.
 	var sep := HSeparator.new()
@@ -741,7 +786,7 @@ func _dismiss_celebration() -> void:
 
 func _reset_after_celebration() -> void:
 	if mixing_manager:
-		mixing_manager.reset_beaker()
+		mixing_manager.reset_beaker_no_refund()
 	_committed = false
 	_reset_results()
 	_update_ui_state()

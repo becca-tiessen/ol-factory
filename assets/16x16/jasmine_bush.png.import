@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bppoyqaybhxic"
-path="res://.godot/imported/empty-beaker.png-dff1751564c258ce640b66508dfd2298.ctex"
+uid="uid://d2l0brjtnsuxp"
+path="res://.godot/imported/jasmine_bush.png-2611c0066dd061cb1882cee6ff70a5dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/empty-beaker.png"
-dest_files=["res://.godot/imported/empty-beaker.png-dff1751564c258ce640b66508dfd2298.ctex"]
+source_file="res://assets/16x16/jasmine_bush.png"
+dest_files=["res://.godot/imported/jasmine_bush.png-2611c0066dd061cb1882cee6ff70a5dd.ctex"]
 
 [params]
 

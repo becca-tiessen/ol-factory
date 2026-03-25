@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Cinnamon Oil"
+description = "A warm, fiery essence distilled from bark curls."
+liquid_color = Color(0.5882353, 0.33333334, 0, 1)
+scent_family = "spicy"
+intensity = 7.0
+note_position = "middle"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

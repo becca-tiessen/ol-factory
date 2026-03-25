@@ -30,6 +30,9 @@ var aging_rack: Array = []
 ## Extra rack slots purchased from the shop (0 to MAX_EXTRA_RACK_SLOTS).
 var extra_rack_slots: int = 0
 
+## Whether the player has seen the aging rack tutorial.
+var seen_rack_tutorial: bool = false
+
 ## Bottles on the display shelf (trophies).
 var displayed_bottles: Array[BottledPerfume] = []
 
@@ -183,6 +186,7 @@ func _save_data() -> void:
 		"aging_rack": rack_entries,
 		"displayed": display_entries,
 		"extra_rack_slots": extra_rack_slots,
+		"seen_rack_tutorial": seen_rack_tutorial,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
@@ -230,3 +234,4 @@ func _load_data() -> void:
 			displayed_bottles.append(BottledPerfume.from_dict(entry))
 
 	extra_rack_slots = clampi(int(data.get("extra_rack_slots", 0)), 0, MAX_EXTRA_RACK_SLOTS)
+	seen_rack_tutorial = bool(data.get("seen_rack_tutorial", false))

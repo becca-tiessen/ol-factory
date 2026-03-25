@@ -7,6 +7,7 @@ var _overlay: ColorRect
 var _is_transitioning: bool = false
 
 const FADE_DURATION: float = 0.35
+const CONTRACT_SCENE := "res://scenes/contract.tscn"
 
 func _ready() -> void:
 	var canvas := CanvasLayer.new()
@@ -25,6 +26,10 @@ func _ready() -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	anchor.add_child(_overlay)
+
+	# Redirect new games to the contract scene on the first frame
+	if GameStartManager.is_new_game():
+		_redirect_to_contract.call_deferred()
 
 func transition_to_scene(target_scene: String) -> void:
 	if _is_transitioning:
@@ -54,3 +59,7 @@ func transition_to_scene(target_scene: String) -> void:
 	await tween_in.finished
 
 	_is_transitioning = false
+
+
+func _redirect_to_contract() -> void:
+	get_tree().change_scene_to_file(CONTRACT_SCENE)

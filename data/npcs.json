@@ -66,9 +66,9 @@
 		{
 			"id": "celine",
 			"name": "Céline",
-			"personality": "elegant",
+			"personality": "shy",
 			"preferred_family": "floral",
-			"active": false
+			"active": true
 		},
 		{
 			"id": "pascal",

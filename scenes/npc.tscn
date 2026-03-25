@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc.gd" id="1_npc"]
+[ext_resource type="Texture2D" path="res://assets/PNG/npc1.png" id="2_npc"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_npc"]
+atlas = ExtResource("2_npc")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_npc"]
+radius = 20.0
+
+[node name="Npc" type="Area2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_npc")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_npc")
+position = Vector2(0, -8)
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = -40.0
+offset_top = -52.0
+offset_right = 40.0
+offset_bottom = -36.0
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "NPC"
+theme_override_font_sizes/font_size = 10
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_npc")

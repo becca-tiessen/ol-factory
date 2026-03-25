@@ -1,23 +1,27 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=7 format=3 uid="uid://wwlf7i4d645f"]
 
 [ext_resource type="Script" uid="uid://b8nteve27n138" path="res://scripts/interactable.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://b050kjf8lg7bi" path="res://assets/PNG/exterior.png" id="2_tex"]
+[ext_resource type="Texture2D" uid="uid://85tar3orcabs" path="res://assets/PNG/jasmine_bush.png" id="3_a0hs3"]
+[ext_resource type="Texture2D" uid="uid://dh7ejfadlf5eq" path="res://assets/PNG/empty_bush.png" id="3_gf0vw"]
 [ext_resource type="Resource" uid="uid://bqhatbmmbafml" path="res://data/jasmine.tres" id="3_ing"]
+[ext_resource type="Texture2D" uid="uid://btc455k314yt0" path="res://assets/PNG/raw_jasmine.png" id="4_hj0bm"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
-radius = 22.0
+radius = 16.0
 
 [node name="JasmineBush" type="Area2D"]
+modulate = Color(1, 1, 0.82, 1)
 collision_layer = 2
 collision_mask = 0
-modulate = Color(1.0, 1.0, 0.82, 1)
 script = ExtResource("1_script")
 ingredient = ExtResource("3_ing")
+empty_texture = ExtResource("3_gf0vw")
+ingredient_icon = ExtResource("4_hj0bm")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_1")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_tex")
-region_enabled = true
+scale = Vector2(1.84375, 1.75)
+texture = ExtResource("3_a0hs3")
 region_rect = Rect2(208, 134, 31, 40)

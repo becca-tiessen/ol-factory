@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cp24ams23vhou"]
 
-[ext_resource type="Texture2D" uid="uid://cs5pxgvlovt0c" path="res://assets/skunk.png" id="1_aoon3"]
+[ext_resource type="Texture2D" uid="uid://cs5pxgvlovt0c" path="res://assets/PNG/skunk.png" id="1_aoon3"]
 [ext_resource type="Script" uid="uid://bpsyq2uoed3t2" path="res://scenes/skunk.gd" id="2_4j060"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_skunk"]
@@ -8,6 +8,8 @@ radius = 8.062258
 
 [node name="Skunk" type="CharacterBody2D"]
 position = Vector2(9, -46)
+collision_layer = 16
+collision_mask = 1
 script = ExtResource("2_4j060")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

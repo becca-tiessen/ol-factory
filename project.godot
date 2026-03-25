@@ -17,16 +17,20 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+GameStartManager="*res://scripts/game_start_manager.gd"
 SceneManager="*res://scripts/scene_manager.gd"
 InventoryManager="*res://scripts/inventory_manager.gd"
 RequestManager="*res://scripts/request_manager.gd"
 CellarManager="*res://scripts/cellar_manager.gd"
 AccordManager="*res://scripts/accord_manager.gd"
+ProgressionManager="*res://scripts/progression_manager.gd"
 CoinManager="*res://scripts/coin_manager.gd"
-ProcessingManager="*res://scripts/processing_manager.gd"
 Hud="*res://scripts/hud.gd"
 InventoryUI="*res://scenes/inventory_ui.tscn"
+ProcessingManager="*res://scripts/processing_manager.gd"
 SkunkManager="*res://scripts/skunk_manager.gd"
+NpcDialogueManager="*res://scripts/npc_dialogue_manager.gd"
+BeachManager="*res://scripts/beach_manager.gd"
 
 [display]
 

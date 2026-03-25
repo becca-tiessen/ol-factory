@@ -94,12 +94,21 @@ func _refresh_ingredients() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 
-		# Colored dot.
-		var dot := ColorRect.new()
-		dot.custom_minimum_size = Vector2(12, 12)
-		dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		dot.color = ing.liquid_color
-		row.add_child(dot)
+		# Icon if available, otherwise colored dot.
+		if ing.icon:
+			var tex_rect := TextureRect.new()
+			tex_rect.texture = ing.icon
+			tex_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+			tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			tex_rect.custom_minimum_size = Vector2(20, 20)
+			tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			row.add_child(tex_rect)
+		else:
+			var dot := ColorRect.new()
+			dot.custom_minimum_size = Vector2(12, 12)
+			dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			dot.color = ing.liquid_color
+			row.add_child(dot)
 
 		# Name and count.
 		var is_raw: bool = ing.result_item is BaseIngredient

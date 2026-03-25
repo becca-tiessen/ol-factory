@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dialogue_box.gd" id="1_dlg"]
+
+[node name="DialogueBox" type="CanvasLayer"]
+script = ExtResource("1_dlg")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -110.0
+offset_left = 12.0
+offset_right = -12.0
+offset_bottom = -8.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 10.0
+offset_right = -16.0
+offset_bottom = -10.0
+theme_override_constants/separation = 6
+
+[node name="NameLabel" type="Label" parent="Panel/VBox"]
+text = "NPC Name"
+theme_override_font_sizes/font_size = 16
+
+[node name="TextLabel" type="RichTextLabel" parent="Panel/VBox"]
+size_flags_vertical = 3
+autowrap_mode = 3
+fit_content = false
+scroll_active = false
+text = "Dialogue text goes here."
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/VBox"]
+visible = false
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="YesButton" type="Button" parent="Panel/VBox/ButtonRow"]
+custom_minimum_size = Vector2(100, 0)
+text = "Give it to them"
+
+[node name="NoButton" type="Button" parent="Panel/VBox/ButtonRow"]
+custom_minimum_size = Vector2(80, 0)
+text = "Not yet"
+
+[node name="ContinueHint" type="Label" parent="Panel/VBox"]
+horizontal_alignment = 2
+text = "▼ Continue"
+theme_override_font_sizes/font_size = 11

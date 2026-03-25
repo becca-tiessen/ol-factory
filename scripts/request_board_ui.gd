@@ -128,19 +128,16 @@ func _populate_request() -> void:
 		%RequestDisplay.add_child(npc_lbl)
 
 	var desc_lbl := Label.new()
-	desc_lbl.text = req.description
+	desc_lbl.text = "\"%s\"" % req.description
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	%RequestDisplay.add_child(desc_lbl)
 
-	var req_lbl := Label.new()
-	req_lbl.text = RequestManager.get_requirements_text(req)
-	req_lbl.add_theme_color_override("font_color", UITheme.SOFT_BLUE)
-	req_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	%RequestDisplay.add_child(req_lbl)
+	%RequestDisplay.add_child(HSeparator.new())
 
 	var reward_lbl := Label.new()
 	reward_lbl.text = "Reward: " + req.reward_text
-	reward_lbl.add_theme_color_override("font_color", UITheme.SOFT_GREEN)
+	reward_lbl.add_theme_color_override("font_color", UITheme.GOLD)
+	reward_lbl.add_theme_font_size_override("font_size", 16)
 	reward_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	%RequestDisplay.add_child(reward_lbl)
 

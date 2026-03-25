@@ -7,11 +7,13 @@
       "Bash(ls /Users/rebeccatiessen/ol-factory/data/*.tres)",
       "Bash(grep -l \"display_shelf\" /Users/rebeccatiessen/ol-factory/scenes/*.tscn)",
       "Bash(grep -n \"result_item\\\\|is_raw\" /Users/rebeccatiessen/ol-factory/data/*.tres)",
-      "Bash(grep -l \"res://data/\" /Users/rebeccatiessen/ol-factory/data/accords/*.tres)"
+      "Bash(grep -l \"res://data/\" /Users/rebeccatiessen/ol-factory/data/accords/*.tres)",
+      "Bash(grep -r outside /Users/rebeccatiessen/ol-factory --include=*.tscn --include=*.gd --include=*.json --include=*.godot)"
     ],
     "additionalDirectories": [
       "/Users/rebeccatiessen/ol-factory",
-      "/Users/rebeccatiessen/ol-factory/data"
+      "/Users/rebeccatiessen/ol-factory/data",
+      "/Users/rebeccatiessen/ol-factory/scenes"
     ]
   }
 }

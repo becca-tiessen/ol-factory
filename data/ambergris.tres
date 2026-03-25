@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BaseIngredient" load_steps=2 format=3 uid="uid://ambergris_ingredient"]
+
+[ext_resource type="Script" uid="uid://byhsqudpoueih" path="res://scripts/base_ingredient.gd" id="1_d4fil"]
+
+[resource]
+script = ExtResource("1_d4fil")
+display_name = "Ambergris"
+description = "A rare waxy substance found on the shore. Prized by perfumers, but you would need specialized equipment to extract its essence."
+liquid_color = Color(0.8, 0.7, 0.45, 1)
+density = 1.0
+scent_profile = Vector3(0.0, 0.3, 0.9)
+scent_family = "amber"
+intensity = 9.0
+note_position = "base"
+metadata/_custom_type_script = "uid://byhsqudpoueih"

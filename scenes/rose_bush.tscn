@@ -1,22 +1,27 @@
-[gd_scene load_steps=5 format=3 uid="uid://b14kpxa5ebqfo"]
+[gd_scene load_steps=7 format=3 uid="uid://b14kpxa5ebqfo"]
 
 [ext_resource type="Script" uid="uid://b8nteve27n138" path="res://scripts/interactable.gd" id="1_6gvo2"]
-[ext_resource type="Texture2D" uid="uid://b050kjf8lg7bi" path="res://assets/PNG/exterior.png" id="1_sk11x"]
 [ext_resource type="Resource" uid="uid://chjx1hio4hotd" path="res://data/rose.tres" id="2_rose"]
+[ext_resource type="Texture2D" uid="uid://cch5h074fthya" path="res://assets/PNG/rosebush.png" id="3_nvw1f"]
+[ext_resource type="Texture2D" path="res://assets/PNG/empty_bush.png" id="4_empty"]
+[ext_resource type="Texture2D" path="res://assets/PNG/raw_rose.png" id="5_icon"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6gvo2"]
-radius = 22.472204
+radius = 15.033297
 
 [node name="RoseBush" type="Area2D"]
 collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_6gvo2")
 ingredient = ExtResource("2_rose")
+empty_texture = ExtResource("4_empty")
+ingredient_icon = ExtResource("5_icon")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_6gvo2")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("1_sk11x")
-region_enabled = true
+position = Vector2(-2.3841858e-07, -2)
+scale = Vector2(1.875, 1.6875001)
+texture = ExtResource("3_nvw1f")
 region_rect = Rect2(208, 134, 31, 40)

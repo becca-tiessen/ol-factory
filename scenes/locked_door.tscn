@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://nlphbuy3g6jx"]
+
+[ext_resource type="Script" uid="uid://ctlqpjunewqh0" path="res://scripts/locked_door.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bflft728tj86x" path="res://assets/PNG/doors_lever_chest_animation.png" id="2_30sld"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(32, 16)
+
+[node name="LockedDoor" type="Area2D"]
+collision_layer = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_door")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -8)
+texture = ExtResource("2_30sld")
+region_enabled = true
+region_rect = Rect2(0, 32, 32, 24)
